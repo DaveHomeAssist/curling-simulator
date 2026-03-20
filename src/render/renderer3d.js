@@ -21,6 +21,13 @@ function worldToScene(stone) {
 }
 
 export function createRenderer3D(container) {
+  // Pre-test WebGL before handing off to Three.js
+  const testCanvas = document.createElement('canvas');
+  const gl = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl');
+  if (!gl) {
+    throw new Error('WebGL context creation failed — browser may not support WebGL');
+  }
+
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x050507);
   scene.fog = new THREE.Fog(0x050507, 22, 88);
@@ -28,7 +35,14 @@ export function createRenderer3D(container) {
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
   camera.position.set(0, 5.6, -4.8);
   camera.lookAt(0, 0.18, 18.5);
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  } catch (glErr) {
+    throw new Error('THREE.WebGLRenderer failed: ' + (glErr.message || glErr));
+  }
+
   renderer.shadowMap.enabled = true;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -40,8 +54,8 @@ export function createRenderer3D(container) {
 
   const root = new THREE.Group();
   scene.add(root);
-  root.add(buildArena(THREE));
-  root.add(buildSheet(THREE));
+  try { root.add(buildArena(THREE)); } catch (e) { throw new Error('buildArena failed: ' + e.message); }
+  try { root.add(buildSheet(THREE)); } catch (e) { throw new Error('buildSheet failed: ' + e.message); }
 
   const iceGlow = new THREE.Mesh(
     new THREE.CircleGeometry(7.5, 64),

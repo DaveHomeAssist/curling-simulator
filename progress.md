@@ -49,3 +49,10 @@ Original prompt: complete all phases without asking again. execute all phases, c
   - repointed runtime imports in `src/main.js`, `src/game/*`, `src/render/*`, and test helpers to the v2 stack
   - switched `src/physics/validation.test.js` to the calibrated v2 modules
   - full `npx vitest run` and `npm run build` both pass on the promoted path
+- Control-scheme tightening:
+  - removed the duplicate top-row mode buttons from the header so mode changes now live in the explicit mode selector
+  - made shot setup more deliberate by only letting pointer movement steer aim while the shot is actively being charged
+  - surfaced handle direction as a visible spin toggle instead of relying on a hidden keyboard-only control
+  - removed the hidden camera cycling hotkeys so the camera stays a visible, deliberate control
+  - updated the on-screen control copy to match the tighter shot flow
+  - still needs a real browser pass to confirm the new drag-to-aim behavior feels natural in play

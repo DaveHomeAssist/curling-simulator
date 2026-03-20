@@ -1,6 +1,5 @@
 import {
   beginCharge,
-  cycleCamera,
   isHumanTurn,
   releaseShot,
   setAim,
@@ -44,12 +43,11 @@ export function bindInput(state, elements, services) {
   }
 
   function onPointerMove(event) {
+    if (!pointer.active) return;
     pointerToAim(event);
-    if (pointer.active) {
-      const rect = surface.getBoundingClientRect();
-      const ratio = 1 - (event.clientY - rect.top) / rect.height;
-      setPowerCharge(state, ratio);
-    }
+    const rect = surface.getBoundingClientRect();
+    const ratio = 1 - (event.clientY - rect.top) / rect.height;
+    setPowerCharge(state, ratio);
   }
 
   function onPointerUp() {
@@ -91,18 +89,6 @@ export function bindInput(state, elements, services) {
         break;
       case 'KeyE':
         setSpin(state, 1);
-        break;
-      case 'KeyR':
-        toggleSpin(state);
-        break;
-      case 'KeyC':
-        cycleCamera(state);
-        break;
-      case 'KeyH':
-        setCameraMode(state, 'house');
-        break;
-      case 'KeyB':
-        setCameraMode(state, 'broadcast');
         break;
       case 'KeyF':
         if (document.fullscreenElement) document.exitFullscreen();

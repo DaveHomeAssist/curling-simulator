@@ -1,0 +1,474 @@
+/* ============================================================
+   CURLING SIMULATOR — App-specific styles
+   Imports shared theme, adds sim-specific overrides
+   ============================================================ */
+@import './theme.css';
+
+/* Force Arena Night (dark) by default for the sim */
+:root {
+  --bg:             #0B1020;
+  --surface:        #121A2B;
+  --surface-2:      #1A2438;
+  --border:         #1E2A44;
+  --border-subtle:  #172035;
+  --text:           #F8FAFC;
+  --text-muted:     #B7C5D6;
+  --text-faint:     #5A7A9A;
+  --primary:        #00E7FF;
+  --primary-hover:  #33EDFF;
+  --on-primary:     #0B1020;
+  --secondary:      #E42734;
+  --secondary-hover:#FF4D57;
+  --on-secondary:   #F8FAFC;
+  --accent:         #FF9600;
+  --on-accent:      #0B1020;
+  --highlight:      #ABFF9A;
+  --highlight-soft: rgba(171,255,154,0.12);
+  --on-highlight:   #0B1020;
+  --success:        #4CAF50;
+  --warning:        #FF9600;
+  --error:          #FF4D57;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+
+  /* sim-specific tokens */
+  --sim-glow-cyan:    rgba(0, 231, 255, 0.12);
+  --sim-glow-red:     rgba(255, 0, 64, 0.10);
+  --sim-panel-bg:     rgba(3, 4, 8, 0.92);
+  --sim-panel-border: rgba(0, 231, 255, 0.18);
+  --sim-pill-bg:      rgba(4, 5, 10, 0.82);
+}
+
+/* Override body to keep the arena gradient */
+body {
+  background:
+    radial-gradient(circle at 18% 10%, var(--sim-glow-cyan), transparent 18%),
+    radial-gradient(circle at 82% 14%, var(--sim-glow-red), transparent 20%),
+    var(--bg);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* No ice grain texture for sim — it has its own canvas */
+body::before { display: none; }
+
+/* --- SHELL LAYOUT --- */
+.curling-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-rows: auto minmax(720px, 1fr) auto;
+  gap: 12px;
+  padding: 12px;
+  color: var(--text);
+}
+
+/* --- PANELS --- */
+.panel {
+  background: var(--sim-panel-bg);
+  border: 1px solid var(--sim-panel-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 0, 64, 0.05) inset;
+  backdrop-filter: blur(16px);
+}
+.panel h2, .panel h3, .panel p { margin: 0; }
+
+/* --- HEADER --- */
+.header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+}
+
+.title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.eyebrow {
+  color: var(--primary);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: var(--text-xs);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 2.4vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: var(--text-sm);
+}
+
+.header-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.header-scoreline,
+.header-endline {
+  font-size: var(--text-sm);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.header-scoreline {
+  font-weight: 700;
+}
+
+.header-endline {
+  color: var(--text-muted);
+}
+
+.header-tools {
+  width: 180px;
+}
+
+/* --- SIDE PANELS --- */
+.left-panel, .right-panel {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* --- SURFACE / CANVAS --- */
+.surface-panel {
+  position: relative;
+  overflow: hidden;
+  min-height: 760px;
+  padding: 0;
+}
+
+.surface-stack {
+  position: absolute;
+  inset: 0;
+}
+
+.render-surface, .input-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.render-surface canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.input-overlay { z-index: 2; }
+
+.surface-badges {
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  right: 18px;
+  z-index: 4;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.pill {
+  border-radius: 999px;
+  padding: 7px 11px;
+  background: var(--sim-pill-bg);
+  border: 1px solid var(--sim-panel-border);
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 600;
+}
+
+/* --- CONTROLS --- */
+.toolbar, .button-row, .preset-grid, .meta-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-group label,
+.small-label {
+  color: var(--primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+}
+
+select, .action-button {
+  width: 100%;
+  border-radius: var(--r-md);
+  border: 1px solid var(--sim-panel-border);
+  background: var(--sim-panel-bg);
+  color: var(--text);
+  padding: 10px 12px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: var(--text-sm);
+  letter-spacing: 0.02em;
+}
+
+.action-button {
+  cursor: pointer;
+  transition: transform var(--dur-fast), border-color var(--dur-fast), background var(--dur-fast);
+}
+
+.action-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0, 231, 255, 0.35);
+  background: var(--surface-2);
+}
+
+.action-button.is-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, #2a6fff 100%);
+  color: var(--on-primary);
+  font-weight: 600;
+}
+
+.action-button.is-accent {
+  background: linear-gradient(135deg, var(--secondary) 0%, #d03b5d 100%);
+  color: var(--on-secondary);
+}
+
+.action-button[data-active="true"] {
+  box-shadow: 0 0 0 1px rgba(0, 231, 255, 0.35) inset;
+}
+
+.preset-button[data-active="true"] {
+  background: rgba(0, 231, 255, 0.16);
+  border-color: rgba(0, 231, 255, 0.4);
+}
+
+/* --- STAT CARDS --- */
+.stat-card {
+  padding: 14px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--sim-panel-border);
+}
+
+.stat-label {
+  color: var(--primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+}
+
+.stat-value {
+  margin-top: 6px;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* --- SCORES --- */
+.score-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* --- MESSAGES --- */
+.message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 240px;
+  overflow: auto;
+}
+
+.message-item {
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  line-height: 1.45;
+  font-size: var(--text-sm);
+}
+
+/* --- SCOREBOARD --- */
+.scoreboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scoreboard-table th,
+.scoreboard-table td {
+  padding: 8px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.scoreboard-table th {
+  color: var(--primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.surface-hud {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.surface-hud-left {
+  top: 88px;
+  left: 18px;
+  width: 78px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.power-rail {
+  width: 18px;
+  height: 240px;
+  border-radius: 999px;
+  background: rgba(7, 13, 24, 0.82);
+  border: 1px solid rgba(154, 186, 236, 0.22);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.power-fill-vertical {
+  width: 100%;
+  height: 4%;
+  min-height: 8px;
+  background: linear-gradient(180deg, #f9fbff 0%, #67d6ff 45%, #ff6961 100%);
+  box-shadow: 0 0 18px rgba(103, 214, 255, 0.28);
+  transition: height var(--dur-fast);
+}
+
+.surface-hud-bottom {
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(5, 10, 18, 0.72);
+  border: 1px solid rgba(154, 186, 236, 0.16);
+  backdrop-filter: blur(10px);
+}
+
+.hud-chip {
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(19, 30, 46, 0.92);
+  border: 1px solid rgba(154, 186, 236, 0.16);
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.surface-shot-summary {
+  margin-left: auto;
+  min-width: 220px;
+  text-align: right;
+}
+
+.tip-copy {
+  text-align: center;
+}
+
+/* --- LEGEND --- */
+.legend {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+}
+
+.legend.is-warning {
+  color: var(--error);
+}
+
+.legend:empty,
+#challenge-meta:empty,
+#multiplayer-meta:empty,
+#renderer-summary:empty {
+  display: none;
+}
+
+.right-panel {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(260px, 0.7fr) minmax(0, 1.4fr);
+  align-items: start;
+}
+
+.scoreboard-wrap,
+.mode-wrap,
+.playbyplay-wrap {
+  min-width: 0;
+}
+
+.message-list {
+  max-height: 160px;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1260px) {
+  .curling-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto minmax(600px, 1fr) auto;
+  }
+  .header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .header-strip {
+    align-items: flex-start;
+    margin-left: 0;
+  }
+  .right-panel {
+    grid-template-columns: 1fr;
+  }
+  .surface-panel { min-height: 620px; }
+  .surface-hud-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .surface-shot-summary {
+    margin-left: 0;
+    text-align: left;
+    min-width: 0;
+  }
+}
