@@ -277,6 +277,10 @@ export function createUI(root) {
         line-height: 1.55;
       }
 
+      .legend.is-warning {
+        color: #ffd3a2;
+      }
+
       @media (max-width: 1260px) {
         .curling-shell {
           grid-template-columns: 1fr;
@@ -369,6 +373,7 @@ export function createUI(root) {
             Drag or arrow keys to aim. Hold mouse or press space to charge, release to throw.
             Q/E sets turn direction. 1–5 swaps shot weight. C cycles cameras. V toggles 2D/3D.
           </div>
+          <div class="legend is-warning" id="renderer-summary"></div>
         </section>
       </aside>
 
@@ -458,6 +463,7 @@ export function createUI(root) {
     techSummary: root.querySelector('#tech-summary'),
     challengeMeta: root.querySelector('#challenge-meta'),
     multiplayerMeta: root.querySelector('#multiplayer-meta'),
+    rendererSummary: root.querySelector('#renderer-summary'),
   };
 
   function renderScoreTable(state) {
@@ -499,6 +505,7 @@ export function createUI(root) {
         ? `Challenge result: ${state.challengeMedal ?? 'pending'}${state.challengeResult !== null ? ` · ${state.challengeResult.toFixed(2)}m` : ''}`
         : 'Select challenge mode for target-shot drills.';
       elements.multiplayerMeta.textContent = `Room ${state.multiplayer.roomCode} · Role ${state.multiplayer.role} · ${state.multiplayer.status}`;
+      elements.rendererSummary.textContent = state.rendererMessage;
 
       elements.messageList.innerHTML = state.messages
         .map((message) => `<div class="message-item">${message}</div>`)

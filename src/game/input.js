@@ -6,7 +6,6 @@ import {
   setAim,
   setCameraMode,
   setPowerCharge,
-  setRenderer,
   setSpin,
   setWeightPreset,
   startMode,
@@ -93,7 +92,7 @@ export function bindInput(state, elements, services) {
         toggleSpin(state);
         break;
       case 'KeyV':
-        setRenderer(state, state.renderer === '2d' ? '3d' : '2d');
+        services.actions?.toggleRenderer();
         break;
       case 'KeyC':
         cycleCamera(state);
@@ -132,7 +131,7 @@ export function bindInput(state, elements, services) {
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);
 
-  elements.rendererToggle?.addEventListener('click', () => setRenderer(state, state.renderer === '2d' ? '3d' : '2d'));
+  elements.rendererToggle?.addEventListener('click', () => services.actions?.toggleRenderer());
   elements.cameraSelect?.addEventListener('change', (event) => setCameraMode(state, event.target.value));
   elements.modeSelect?.addEventListener('change', (event) => startMode(state, event.target.value));
   elements.weightButtons?.forEach((button) => {

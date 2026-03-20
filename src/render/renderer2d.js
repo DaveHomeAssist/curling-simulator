@@ -1,4 +1,5 @@
 import { PHYSICS, SHEET } from '../physics/constants.js';
+import { CHALLENGES } from '../game/challenges.js';
 
 function makeScale(canvas) {
   const padding = 36;
@@ -113,6 +114,69 @@ export function createRenderer2D(canvas) {
     ctx.restore();
   }
 
+  function drawChallengeTarget(state) {
+    if (state.gameMode !== 'challenge') return;
+    const challenge = CHALLENGES.find((entry) => entry.id === state.selectedChallengeId);
+    if (!challenge) return;
+    const target = worldToScreen(challenge.target.x, challenge.target.y);
+    const { scale } = makeScale(canvas);
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 222, 114, 0.9)';
+    ctx.fillStyle = 'rgba(255, 211, 102, 0.14)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(target.x, target.y, challenge.target.radius * scale, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(target.x - 10, target.y);
+    ctx.lineTo(target.x + 10, target.y);
+    ctx.moveTo(target.x, target.y - 10);
+    ctx.lineTo(target.x, target.y + 10);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawTrails(state) {
+    const now = performance.now();
+    ctx.save();
+    for (const mark of state.effects.wakeTrail ?? []) {
+      const screen = worldToScreen(mark.x, mark.y);
+      const age = Math.min(1, Math.max(0, (now - mark.createdAt) / 10000));
+      ctx.fillStyle = `rgba(255,255,255,${0.16 * (1 - age)})`;
+      ctx.beginPath();
+      ctx.ellipse(screen.x, screen.y, 10 * (1 - age * 0.5), 4 * (1 - age * 0.4), 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    for (const mark of state.effects.sweepTrail ?? []) {
+      const screen = worldToScreen(mark.x, mark.y);
+      const age = Math.min(1, Math.max(0, (now - mark.createdAt) / 1400));
+      ctx.fillStyle = `rgba(135, 209, 255, ${0.22 * (1 - age)})`;
+      ctx.beginPath();
+      ctx.arc(screen.x, screen.y, 16 * (1 - age * 0.35), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawImpacts(state) {
+    const now = performance.now();
+    ctx.save();
+    for (const event of state.effects.impacts ?? []) {
+      const age = Math.min(1, Math.max(0, (now - event.createdAt) / 900));
+      const x = event.x ?? 0;
+      const y = event.y ?? SHEET.TEE_Y;
+      const screen = worldToScreen(x, y);
+      ctx.strokeStyle = `rgba(255, 188, 122, ${0.5 * (1 - age)})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(screen.x, screen.y, 10 + age * 22, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function drawStone(stone, selected = false) {
     if (stone.removed || stone.inPlay === false) return;
     const screen = worldToScreen(stone.x, stone.y);
@@ -163,6 +227,9 @@ export function createRenderer2D(canvas) {
     render() {
       if (!snapshot) return;
       drawSheet();
+      drawTrails(snapshot);
+      drawImpacts(snapshot);
+      drawChallengeTarget(snapshot);
       drawPreview(snapshot.preview);
       snapshot.stones.forEach((stone) => drawStone(stone, stone.id === snapshot.lastReleased));
       if (snapshot.mode !== 'travel' && snapshot.mode !== 'game-over') {
