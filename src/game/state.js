@@ -62,8 +62,8 @@ export function createGameState() {
     preview: [],
     lastReleased: null,
     messages: [
-      'Renderer-agnostic curling simulator initialized.',
-      'Drag to aim, hold and release to throw, space to sweep.',
+      'Drag to aim, hold to charge, release to throw.',
+      'Space sweeps once the stone is in motion.',
     ],
     selectedStoneId: null,
     selectedChallengeId: CHALLENGES[0]?.id ?? null,

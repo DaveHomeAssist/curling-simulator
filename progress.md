@@ -31,6 +31,16 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - Manual Chrome headless screenshots captured after the polish pass:
   - `output/manual-headless/renderer-3d.png`
   - `output/manual-headless/renderer-3d-polished.png`
+- UI restructuring pass for 3D-first play:
+  - reduced the shell from a permanent 3-column layout to a narrow control rail + dominant surface + lower info strip
+  - moved the power meter onto the play surface
+  - moved weight/spin/team/shot into a bottom surface HUD
+  - collapsed scoreboard and play-by-play below the rink instead of boxing it in on the right
+  - hid camera controls unless 3D is active and hid challenge selection unless challenge mode is active
+  - filtered technical/debug messages out of the player-facing log
+  - set healthy sessions to default to 3D instead of defaulting to 2D
+- Manual Chrome headless validation now confirms the new center-dominant layout in 2D fallback:
+  - `output/manual-headless/home-2d-fallback.png`
 - Validation:
   - `npm run build` passes after the 3D lighting/camera patch
   - Vitest still appears to hang on open handles in this environment; a timed subprocess reached test execution dots and then timed out instead of exiting cleanly

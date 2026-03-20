@@ -97,6 +97,15 @@ export function createUI(root) {
           <div class="pill" id="renderer-pill">Renderer: 3D</div>
           <div class="pill" id="camera-pill">Camera: Delivery</div>
         </div>
+        <div class="tutorial" id="tutorial-panel" hidden>
+          <h3>First stones</h3>
+          <ol>
+            <li>Drag on the ice to set your line.</li>
+            <li>Hold and drag to charge the shot.</li>
+            <li>Release to throw, then sweep with space.</li>
+          </ol>
+          ${button('Got it', 'action-button is-primary', { id: 'tutorial-dismiss', type: 'button' })}
+        </div>
         <div class="surface-stack">
           <canvas id="surface-2d" class="render-surface"></canvas>
           <div id="surface-3d" class="render-surface"></div>
@@ -166,6 +175,8 @@ export function createUI(root) {
     weightButtons: [...root.querySelectorAll('.preset-button')],
     rendererPill: root.querySelector('#renderer-pill'),
     cameraPill: root.querySelector('#camera-pill'),
+    tutorialPanel: root.querySelector('#tutorial-panel'),
+    tutorialDismiss: root.querySelector('#tutorial-dismiss'),
     scoreRed: root.querySelector('#score-red'),
     scoreYel: root.querySelector('#score-yel'),
     endValue: root.querySelector('#end-value'),
@@ -184,6 +195,24 @@ export function createUI(root) {
     multiplayerMeta: root.querySelector('#multiplayer-meta'),
     rendererSummary: root.querySelector('#renderer-summary'),
   };
+
+  const tutorialKey = 'curling-simulator:tutorial-dismissed';
+  try {
+    if (localStorage.getItem(tutorialKey) !== '1') {
+      elements.tutorialPanel.hidden = false;
+    }
+  } catch {
+    elements.tutorialPanel.hidden = false;
+  }
+
+  elements.tutorialDismiss?.addEventListener('click', () => {
+    elements.tutorialPanel.hidden = true;
+    try {
+      localStorage.setItem(tutorialKey, '1');
+    } catch {
+      // ignore storage failures
+    }
+  });
 
   function renderScoreTable(state) {
     const endCount = Math.max(state.scoreByEnd.red.length, state.scoreByEnd.yel.length, 1);

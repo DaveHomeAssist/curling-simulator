@@ -132,7 +132,6 @@ function mount() {
     state.renderer = '2d';
     state.rendererReady = false;
     state.rendererMessage = 'WebGL unavailable in this browser session. Running in fallback mode.';
-    addMessage(state, 'WebGL was not detected. The simulator switched to fallback mode.');
     console.warn('WebGL not available — using fallback renderer');
   }
 
@@ -150,7 +149,6 @@ function mount() {
     state.renderer = '2d';
     state.rendererReady = false;
     state.rendererMessage = '3D init error: ' + (err.message || String(err));
-    addMessage(state, '3D error: ' + (err.message || String(err)));
     renderer3d = { resize() {}, sync() {}, render() {}, setVisible() {}, dispose() {} };
   }
   const audio = createAudioManager(state);
@@ -226,12 +224,18 @@ function mount() {
     if (state.rendererReady) {
       setRenderer(state, '3d');
       state.rendererMessage = '3D renderer forced by URL parameter.';
-      addMessage(state, 'Renderer override: 3D forced from URL parameter.');
     } else {
       state.renderer = '2d';
       state.rendererMessage = '3D renderer was requested by URL parameter, but this session stayed in fallback mode.';
-      addMessage(state, 'Renderer override requested 3D, but fallback mode stayed active.');
     }
+  } else if (runtime.requestedRenderer === '2d') {
+    setRenderer(state, '2d');
+    state.rendererMessage = '2D renderer forced by URL parameter.';
+  } else if (state.rendererReady) {
+    setRenderer(state, '3d');
+    state.rendererMessage = '3D delivery view active. Switch to 2D only when you want the tactical sheet.';
+  } else {
+    setRenderer(state, '2d');
   }
   ui.render(state);
   loop.start();
@@ -242,6 +246,11 @@ function mount() {
     return buildTextState(state);
   };
   window.forceRenderer = (renderer) => {
+    if (renderer === '2d') {
+      setRenderer(state, '2d');
+      ui.render(state);
+      return state.renderer;
+    }
     if (renderer === '3d' && state.rendererReady) {
       setRenderer(state, '3d');
       ui.render(state);

@@ -405,6 +405,44 @@ select, .action-button {
   text-align: right;
 }
 
+.tutorial {
+  position: absolute;
+  top: 72px;
+  left: 18px;
+  z-index: 6;
+  width: min(360px, calc(100% - 36px));
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(5, 10, 18, 0.94);
+  border: 1px solid rgba(154, 186, 236, 0.18);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(10px);
+}
+
+.tutorial[hidden] {
+  display: none;
+}
+
+.tutorial h3 {
+  margin-bottom: 10px;
+  color: var(--primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+
+.tutorial ol {
+  padding-left: 18px;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+}
+
+.tutorial .action-button {
+  margin-top: 12px;
+  width: auto;
+}
+
 .tip-copy {
   text-align: center;
 }
@@ -471,4 +509,117 @@ select, .action-button {
     text-align: left;
     min-width: 0;
   }
+}
+
+/* --- RINK-FIRST OVERRIDES --- */
+.curling-shell {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(68vh, 1fr) auto auto auto;
+}
+
+.header,
+.surface-panel,
+.hud,
+.left-panel,
+.right-panel {
+  grid-column: 1;
+}
+
+.header { grid-row: 1; }
+.surface-panel {
+  grid-row: 2;
+  min-height: min(80vh, 860px);
+}
+.hud { grid-row: 3; }
+.left-panel { grid-row: 4; }
+.right-panel {
+  grid-row: 5;
+  grid-column: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.panel,
+.panel .legend,
+.panel select,
+.panel .action-button,
+.panel .stat-label,
+.panel .small-label,
+.panel .message-item,
+.panel .scoreboard-table,
+.panel .hud-chip,
+.panel .pill {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.title {
+  font-family: var(--font-display);
+}
+
+.subtitle {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-style: normal;
+  font-size: 0.98rem;
+}
+
+.small-label,
+.stat-label {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.header-scoreline,
+.header-endline,
+.legend,
+.message-item,
+.hud-chip,
+.scoreboard-table td,
+.scoreboard-table th {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hud {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.hud-card:last-child {
+  display: none;
+}
+
+.surface-panel {
+  min-height: 72vh;
+}
+
+.left-panel,
+.right-panel,
+.hud {
+  padding: 16px 18px;
+}
+
+.right-panel .control-group {
+  min-width: 0;
+}
+
+.right-panel .scoreboard-wrap,
+.right-panel .mode-wrap,
+.right-panel .playbyplay-wrap {
+  min-width: 0;
+}
+
+.right-panel .message-list {
+  max-height: 140px;
+}
+
+.left-panel[hidden],
+.right-panel[hidden],
+.control-group[hidden] {
+  display: none !important;
+}
+
+.legend:empty,
+#challenge-meta:empty,
+#multiplayer-meta:empty,
+#renderer-summary:empty {
+  display: none;
 }
