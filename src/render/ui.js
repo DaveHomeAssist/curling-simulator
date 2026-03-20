@@ -188,6 +188,89 @@ export function createUI(root) {
           </div>
 
           <div class="drawer-detail" id="settings-detail"></div>
+
+          <div class="help-section">
+            <div class="help-heading">How to Play</div>
+
+            <div class="help-block">
+              <div class="help-subhead">The Basics</div>
+              <p>Curling is played in <strong>ends</strong> (like innings). Each end, two teams alternate throwing 8 stones each (16 total) toward the <strong>house</strong> — the target circles at the far end of the sheet. The team with the stone closest to the center (<strong>button</strong>) scores points for every stone closer than the opponent's best.</p>
+            </div>
+
+            <div class="help-block">
+              <div class="help-subhead">Throwing a Stone</div>
+              <ol class="help-steps">
+                <li><strong>Aim</strong> — Drag on the ice to place your broom (target line). Use <kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd> for fine adjustment.</li>
+                <li><strong>Shot type</strong> — Pick from Draw, Guard, Hit, Freeze, or Peel. Each sets a default weight (speed). Keys <kbd>1</kbd>–<kbd>5</kbd> also work.</li>
+                <li><strong>Turn</strong> — Choose In-turn (clockwise) or Out-turn (counter-clockwise). This controls the curl direction. <kbd>Q</kbd> = In, <kbd>E</kbd> = Out.</li>
+                <li><strong>Charge</strong> — Tap CHARGE (or <kbd>Space</kbd>), then hold. A power meter oscillates — release when the fill matches your desired weight.</li>
+                <li><strong>Sweep</strong> — While the stone travels, hold the SWEEP button or <kbd>Space</kbd>. Sweeping reduces friction, making the stone travel farther and curl less.</li>
+              </ol>
+            </div>
+
+            <div class="help-block">
+              <div class="help-subhead">Shot Types</div>
+              <dl class="help-dl">
+                <dt>Draw</dt><dd>A soft shot that stops in or near the house. The most common shot.</dd>
+                <dt>Guard</dt><dd>A stone placed in front of the house to protect a scoring stone behind it.</dd>
+                <dt>Takeout / Hit</dt><dd>A firm shot aimed to knock an opponent's stone out of play.</dd>
+                <dt>Freeze</dt><dd>A draw that stops in direct contact with another stone, making it hard to remove.</dd>
+                <dt>Peel</dt><dd>A hard hit on a guard stone, clearing it and rolling out of play yourself.</dd>
+                <dt>Hit &amp; Roll</dt><dd>Remove the target stone and roll your shooter behind cover.</dd>
+              </dl>
+            </div>
+
+            <div class="help-block">
+              <div class="help-subhead">When Stones Disappear</div>
+              <p>A stone is removed from play when it:</p>
+              <ul class="help-ul">
+                <li>Slides past the <strong>back line</strong> behind the house</li>
+                <li>Goes off the <strong>side walls</strong> of the sheet</li>
+                <li>Fails to reach the <strong>hog line</strong> (front of scoring zone) — a violation</li>
+              </ul>
+              <p>Removed stones stay in memory for scoring but are no longer visible on the sheet.</p>
+            </div>
+
+            <div class="help-block">
+              <div class="help-subhead">Scoring</div>
+              <p>Only <strong>one team scores per end</strong>. The team with the closest stone to the button scores 1 point for each of their stones that is closer than the opponent's closest stone. A <strong>blank end</strong> (no stones in the house) means no points and the hammer stays.</p>
+              <p>The team that did <strong>not</strong> score gets the <strong>hammer</strong> (last stone advantage) in the next end.</p>
+            </div>
+
+            <div class="help-block">
+              <div class="help-subhead">Game Modes</div>
+              <dl class="help-dl">
+                <dt>Exhibition</dt><dd>Full 8-end match against the AI. Standard rules.</dd>
+                <dt>Practice</dt><dd>Unlimited stones, no turns, no scoring. Experiment freely.</dd>
+                <dt>Shot Challenge</dt><dd>Single-shot drills — draws, takeouts, guards, freezes, peels. Earn gold, silver, or bronze medals.</dd>
+                <dt>Tournament</dt><dd>6-end bracket games against AI teams. Win to advance.</dd>
+                <dt>Multiplayer</dt><dd>Local two-player mode (share a device).</dd>
+              </dl>
+            </div>
+
+            <div class="help-block">
+              <div class="help-subhead">Keyboard Shortcuts</div>
+              <table class="help-keys">
+                <tr><td><kbd>←</kbd> <kbd>→</kbd> / <kbd>A</kbd> <kbd>D</kbd></td><td>Adjust broom aim</td></tr>
+                <tr><td><kbd>1</kbd>–<kbd>5</kbd></td><td>Shot type (Guard, Draw, Control, Takeout, Peel)</td></tr>
+                <tr><td><kbd>Q</kbd> / <kbd>E</kbd></td><td>In-turn / Out-turn</td></tr>
+                <tr><td><kbd>Space</kbd></td><td>Arm charge · hold to charge · release to throw · sweep while moving</td></tr>
+                <tr><td><kbd>F</kbd></td><td>Toggle fullscreen</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>Close modal</td></tr>
+              </table>
+            </div>
+
+            <div class="help-block">
+              <div class="help-subhead">Camera Views (3D mode)</div>
+              <dl class="help-dl">
+                <dt>Delivery</dt><dd>Behind the hack — the thrower's perspective.</dd>
+                <dt>Follow</dt><dd>Tracks the moving stone down the sheet.</dd>
+                <dt>House</dt><dd>Overhead view of the scoring area.</dd>
+                <dt>Broadcast</dt><dd>Classic TV camera angle from the side.</dd>
+                <dt>Free</dt><dd>Unlocked orbit camera.</dd>
+              </dl>
+            </div>
+          </div>
         </div>
       </div>
     </div>

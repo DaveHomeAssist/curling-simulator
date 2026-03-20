@@ -629,3 +629,145 @@ select,
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* ── Help Section ──────────────────────────────────────────────── */
+.help-section {
+  border-top: 1px solid var(--border);
+  margin-top: 16px;
+  padding-top: 16px;
+}
+
+.help-heading {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--cyan);
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+}
+
+.help-block {
+  margin-bottom: 16px;
+}
+
+.help-subhead {
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
+}
+
+.help-section p {
+  font-size: 0.72rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.help-section strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.help-steps {
+  list-style: none;
+  counter-reset: step;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.help-steps li {
+  counter-increment: step;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  padding-left: 1.5em;
+  position: relative;
+}
+
+.help-steps li::before {
+  content: counter(step) ".";
+  position: absolute;
+  left: 0;
+  color: var(--cyan);
+  font-weight: 500;
+}
+
+.help-dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  font-size: 0.72rem;
+}
+
+.help-dl dt {
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.help-dl dd {
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.help-ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.help-ul li {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  padding-left: 1em;
+  position: relative;
+  line-height: 1.55;
+}
+
+.help-ul li::before {
+  content: "·";
+  position: absolute;
+  left: 0;
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.help-keys {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+}
+
+.help-keys td {
+  padding: 4px 0;
+  color: var(--text-muted);
+  vertical-align: top;
+  line-height: 1.55;
+}
+
+.help-keys td:first-child {
+  white-space: nowrap;
+  padding-right: 12px;
+  color: var(--text);
+  width: 1%;
+}
+
+.help-section kbd {
+  display: inline-block;
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--cyan);
+  line-height: 1.4;
+}
