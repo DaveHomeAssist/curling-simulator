@@ -218,7 +218,9 @@ export function releaseShot(state, now = performance.now()) {
   state.stats.shotsTaken += 1;
   state.shotNumber += 1;
   state.turnStartedAt = now;
-  state.stonesRemainingByTeam[state.currentTeam] = Math.max(0, state.stonesRemainingByTeam[state.currentTeam] - 1);
+  if (state.gameMode !== 'practice') {
+    state.stonesRemainingByTeam[state.currentTeam] = Math.max(0, state.stonesRemainingByTeam[state.currentTeam] - 1);
+  }
   state.preview = [];
   state.dirtyPreview = true;
   state.needsRenderSync = true;
@@ -270,6 +272,14 @@ export function finalizeTravel(state, settledAt = performance.now()) {
     updateChallengeResult(state);
   }
 
+  if (state.gameMode === 'practice') {
+    state.currentTeam = 'red';
+    state.mode = 'aim';
+    state.canThrow = true;
+    state.dirtyPreview = true;
+    return;
+  }
+
   if (isEndComplete(state)) {
     scoreEnd(state);
     prepareNextEnd(state);
@@ -299,6 +309,9 @@ function updateChallengeResult(state) {
 }
 
 export function isEndComplete(state) {
+  if (state.gameMode === 'practice') {
+    return false;
+  }
   return state.stonesRemainingByTeam.red === 0 && state.stonesRemainingByTeam.yel === 0;
 }
 
@@ -319,6 +332,17 @@ export function prepareNextEnd(state) {
   if (state.end >= state.maxEnds) {
     state.mode = 'game-over';
     state.canThrow = false;
+    if (state.gameMode === 'tournament') {
+      const winner = state.totalScore.red >= state.totalScore.yel ? 'red' : 'yel';
+      const winnerName = state.teams[winner].name;
+      state.tournament.wins[winnerName] = (state.tournament.wins[winnerName] ?? 0) + 1;
+      state.tournament.currentMatch += 1;
+      if (state.tournament.currentMatch >= Math.max(1, state.tournament.bracketSize / 2)) {
+        state.tournament.round += 1;
+        state.tournament.currentMatch = 0;
+      }
+      addMessage(state, `${winnerName} advances in the tournament bracket.`);
+    }
     addMessage(state, `Game over. ${state.totalScore.red}-${state.totalScore.yel}.`);
     return;
   }
@@ -357,7 +381,7 @@ export function startMode(state, mode) {
   state.currentTeam = 'red';
   state.hammerTeam = 'yel';
   state.shotNumber = 0;
-  state.stonesRemainingByTeam = { red: 8, yel: 8 };
+  state.stonesRemainingByTeam = mode === 'practice' ? { red: 99, yel: 0 } : mode === 'challenge' ? { red: 1, yel: 0 } : { red: 8, yel: 8 };
   state.ai.enabled = mode !== 'practice' && mode !== 'challenge' && mode !== 'multiplayer';
   state.multiplayer.enabled = mode === 'multiplayer';
   state.multiplayer.status = mode === 'multiplayer' ? 'local-lobby' : 'offline';

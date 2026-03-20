@@ -26,9 +26,14 @@ export function createRenderer3D(container) {
   scene.fog = new THREE.Fog(0x08111c, 18, 70);
 
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
+  camera.position.set(0, 4.4, -1.4);
+  camera.lookAt(0, 0.2, 16);
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
   renderer.shadowMap.enabled = true;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.domElement.style.display = 'block';
+  renderer.domElement.style.width = '100%';
+  renderer.domElement.style.height = '100%';
   container.appendChild(renderer.domElement);
 
   const root = new THREE.Group();
