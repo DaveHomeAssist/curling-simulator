@@ -90,6 +90,7 @@ function buildTextState(state) {
     shotNumber: state.shotNumber,
     aimX: Number(state.aimX.toFixed(3)),
     powerCharge: Number(state.powerCharge.toFixed(3)),
+    powerArmed: state.powerArmed,
     spin: state.spin,
     moving,
     stones: state.stones.filter((stone) => !stone.removed).map((stone) => ({
@@ -196,14 +197,20 @@ function mount() {
   bindInput(state, {
     surface: ui.elements.overlay,
     overlay: ui.elements.overlay,
+    scoreStrip: ui.elements.scoreStrip,
+    settingsToggle: ui.elements.settingsToggle,
     cameraSelect: ui.elements.cameraSelect,
     modeSelect: ui.elements.modeSelect,
-    weightButtons: ui.elements.weightButtons,
+    shotButtons: ui.elements.shotButtons,
+    turnButtons: ui.elements.turnButtons,
+    chargeButton: ui.elements.chargeButton,
+    sweepButton: ui.elements.sweepButton,
+    audioToggle: ui.elements.audioToggle,
+    rendererToggle: ui.elements.rendererToggle,
+    historyModal: ui.elements.historyModal,
+    settingsModal: ui.elements.settingsModal,
     challengeSelect: ui.elements.challengeSelect,
     resetButton: ui.elements.resetButton,
-    practiceButton: ui.elements.practiceButton,
-    multiplayerButton: ui.elements.multiplayerButton,
-    challengeButton: ui.elements.challengeButton,
   }, {
     actions,
   });

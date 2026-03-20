@@ -20,6 +20,17 @@ function worldToScene(stone) {
   };
 }
 
+function getDeadStoneSlot(stones, stone) {
+  const removedByTeam = stones.filter((entry) => (entry.removed || entry.inPlay === false) && entry.team === stone.team);
+  const slot = Math.max(0, removedByTeam.findIndex((entry) => entry.id === stone.id));
+  const side = stone.team === 'yel' ? 1 : -1;
+  return {
+    x: side * (SHEET.WIDTH / 2 + 0.72 + (slot % 2) * 0.22),
+    y: 0.12,
+    z: 4.2 + Math.floor(slot / 2) * 0.42,
+  };
+}
+
 export function createRenderer3D(container) {
   // Pre-test WebGL before handing off to Three.js
   const testCanvas = document.createElement('canvas');
@@ -149,10 +160,12 @@ export function createRenderer3D(container) {
     for (const stone of state.stones) {
       liveIds.add(stone.id);
       const mesh = ensureStoneMesh(stone);
-      const pos = worldToScene(stone);
+      const removed = stone.removed || stone.inPlay === false;
+      const pos = removed ? getDeadStoneSlot(state.stones, stone) : worldToScene(stone);
       mesh.position.set(pos.x, pos.y, pos.z);
       mesh.rotation.y += (stone.omega ?? 0) * 0.04;
-      mesh.visible = !(stone.removed || stone.inPlay === false);
+      mesh.visible = true;
+      mesh.scale.setScalar(removed ? 0.9 : 1);
     }
 
     for (const [id, mesh] of stoneMeshes.entries()) {

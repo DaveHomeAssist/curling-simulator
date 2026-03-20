@@ -45,15 +45,21 @@ export function createLoop(state, services) {
   let rafId = 0;
 
   function fixedUpdate(dt, now) {
+    if (state.cameraHoldUntil && now >= state.cameraHoldUntil && state.mode !== 'travel') {
+      state.cameraHoldUntil = 0;
+      state.cameraMode = state.preferredCameraMode;
+    }
+
     if (state.mode === 'power') {
       updateCharge(state, dt);
     }
 
-    if (state.mode === 'aim' || state.mode === 'power') {
+    if (state.mode === 'aim' || state.mode === 'charge-ready' || state.mode === 'power') {
       updatePreview(state);
     }
 
     if (state.mode === 'travel') {
+      const movingStone = getMovingStone(state);
       let hadMotion = false;
 
       for (const stone of state.stones) {
@@ -66,9 +72,19 @@ export function createLoop(state, services) {
       if (events.length > 0) {
         services.audio?.onCollision(events);
         state.effects.impacts.push(...events.map((event) => ({ ...event, createdAt: now })));
+        state.cameraMode = 'broadcast';
+        state.cameraHoldUntil = now + 900;
       }
 
       services.effects?.updateWake(state, dt, now);
+
+      if (state.renderer === '3d' && state.rendererReady && now >= state.cameraHoldUntil) {
+        if (movingStone && movingStone.y >= SHEET.TEE_Y - 3.05) {
+          state.cameraMode = 'house';
+        } else {
+          state.cameraMode = 'follow';
+        }
+      }
 
       if (!hadMotion && !state.stones.some((stone) => Math.abs(stone.vx) > 0.01 || Math.abs(stone.vy) > 0.01)) {
         const deliveredStone = state.stones.find((stone) => stone.id === state.lastReleased);

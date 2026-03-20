@@ -8,6 +8,14 @@ const DIFFICULTY = {
   olympic: { samples: 40, aimNoise: 0.02, velocityNoise: 0.01 },
 };
 
+const WEIGHT_OPTIONS = [
+  { preset: 'guard', velocity: 3.2 },
+  { preset: 'draw', velocity: 4.15 },
+  { preset: 'control', velocity: 5.25 },
+  { preset: 'takeout', velocity: 6.1 },
+  { preset: 'peel', velocity: 7.15 },
+];
+
 function cloneValue(value) {
   if (typeof structuredClone === 'function') {
     return structuredClone(value);
@@ -66,24 +74,23 @@ export function findBestShot(stones, team, difficulty, evaluateFn = evaluateShot
     difficulty,
   }));
   const aimPositions = buildSamples(config.samples, -(SHEET_WIDTH / 2) + 0.2, SHEET_WIDTH / 2 - 0.2);
-  const weightLevels = [0.85, 0.95, 1.05, 1.15, 1.25];
   const spinOptions = [-1, 1];
 
   let best = null;
 
   for (const baseAimX of aimPositions) {
-    for (let weightIndex = 0; weightIndex < weightLevels.length; weightIndex += 1) {
-      const baseVelocity = weightLevels[weightIndex] * 3.2;
+    for (const weight of WEIGHT_OPTIONS) {
       for (const spin of spinOptions) {
         const aimX = baseAimX + gaussian(random) * config.aimNoise;
-        const velocity = baseVelocity + gaussian(random) * config.velocityNoise;
+        const velocity = weight.velocity * (1 + gaussian(random) * config.velocityNoise);
         const result = evaluateFn(cloneValue(stones), aimX, velocity, spin, team);
         const candidate = {
           aimX,
           velocity,
           spin,
           expectedScore: result?.value ?? 0,
-          shotType: result?.type ?? 'draw',
+          shotType: result?.type ?? weight.preset,
+          weightPreset: weight.preset,
         };
         if (!best || candidate.expectedScore > best.expectedScore) {
           best = candidate;

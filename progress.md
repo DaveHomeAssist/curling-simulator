@@ -44,6 +44,15 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - Validation:
   - `npm run build` passes after the 3D lighting/camera patch
   - Vitest still appears to hang on open handles in this environment; a timed subprocess reached test execution dots and then timed out instead of exiting cleanly
+- Gameplay/canonical pass:
+  - challenge grading now evaluates by shot intent instead of treating every challenge as a raw distance-to-target drill
+  - AI shot evaluation now scores board improvement, shot rock pressure, opponent removals, and penalizes own removals correctly
+  - shot search now samples real delivery weights instead of arbitrary generic velocity bands
+  - added a real shot-call layer in the HUD/menu: intent, broom/line, handle, and weight
+  - player-facing log now prioritizes play-by-play over technical state noise
+- Validation:
+  - module-level ESM sanity import succeeded for `state.js`, `evaluator.js`, `shotSearch.js`, and `ui.js`
+  - full Vite/Vitest runs still time out intermittently in this environment, so the main confirmation for this pass is code-level import success plus prior runtime screenshots
 - Renderer direction corrected:
   - removed the visible renderer toggle and keyboard switch
   - defaulted boot flow to 3D when WebGL is healthy
@@ -66,3 +75,21 @@ Original prompt: complete all phases without asking again. execute all phases, c
   - removed the hidden camera cycling hotkeys so the camera stays a visible, deliberate control
   - updated the on-screen control copy to match the tighter shot flow
   - still needs a real browser pass to confirm the new drag-to-aim behavior feels natural in play
+- Layout simplification:
+  - switched the shell to a rink-first single-column flow so the surface owns the viewport instead of getting squeezed by side panels
+  - moved the first-visit onboarding into an in-surface tutorial overlay
+  - hid renderer/challenge sub-panels when they are not relevant to the current mode
+  - shifted the remaining player-facing copy to body-font styling for readability
+  - browser smoke check captured a fresh screenshot and confirmed the simplified stack is rendering; build verification is still pending because the local Vite build call is hanging in this workspace
+- Mobile + gameplay drawer pass:
+  - replaced the desktop side-panel UI with a fixed top scoreboard strip, full-height viewport, and fixed bottom shot drawer
+  - added sequential pre-shot setup flow: shot type, turn, then charge
+  - moved charging to a hold-and-release canvas gesture with an on-surface radial arc and weight label
+  - added a mobile sweep button that replaces the setup drawer during travel
+  - moved scoreboard history and match settings into bottom-sheet modals
+  - added broom marker, shot summary chip, and result chip overlays
+  - added camera sequencing hooks so travel favors follow/house and collisions briefly cut to broadcast
+  - default exhibition/play modes now run to 10 ends instead of 8
+- Validation:
+  - ESM import sanity passed for `src/game/state.js`, `src/game/input.js`, `src/game/loop.js`, and `src/render/ui.js` (`IMPORT_OK`)
+  - bounded `npm run build` entered Vite production build and reached `transforming...`, but did not complete inside the 30s timeout in this environment

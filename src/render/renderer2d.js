@@ -13,6 +13,15 @@ function makeScale(canvas) {
   return { padding, scale, left, top, rinkWidth, rinkHeight };
 }
 
+function getDeadStoneScreen(canvas, stone, removedIndex) {
+  const { left, top, rinkWidth, rinkHeight } = makeScale(canvas);
+  const laneX = stone.team === 'yel'
+    ? left + rinkWidth - 30
+    : left + 30;
+  const laneY = top + 28 + removedIndex * 26;
+  return { x: laneX, y: Math.min(laneY, top + rinkHeight - 28) };
+}
+
 export function createRenderer2D(canvas) {
   const ctx = canvas.getContext('2d');
   let snapshot = null;
@@ -184,12 +193,21 @@ export function createRenderer2D(canvas) {
   }
 
   function drawStone(stone, selected = false) {
-    if (stone.removed || stone.inPlay === false) return;
-    const screen = worldToScreen(stone.x, stone.y);
+    const removed = stone.removed || stone.inPlay === false;
+    const removedIndex = snapshot
+      ? snapshot.stones.filter((entry) => (entry.removed || entry.inPlay === false) && entry.team === stone.team)
+        .findIndex((entry) => entry.id === stone.id)
+      : -1;
+    const screen = removed
+      ? getDeadStoneScreen(canvas, stone, Math.max(removedIndex, 0))
+      : worldToScreen(stone.x, stone.y);
     const { scale } = makeScale(canvas);
-    const radius = (stone.radius ?? PHYSICS.STONE_RADIUS) * scale;
+    const radius = (stone.radius ?? PHYSICS.STONE_RADIUS) * scale * (removed ? 0.8 : 1);
 
     ctx.save();
+    if (removed) {
+      ctx.globalAlpha = 0.75;
+    }
     ctx.beginPath();
     ctx.fillStyle = stone.team === 'yel' ? '#e1bf4d' : '#c94a48';
     ctx.arc(screen.x, screen.y, radius, 0, Math.PI * 2);
@@ -207,6 +225,16 @@ export function createRenderer2D(canvas) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(String(stone.idx).replace(/[^\d]/g, '') || '•', screen.x, screen.y + 1);
+    if (removed) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(screen.x - radius * 0.7, screen.y - radius * 0.7);
+      ctx.lineTo(screen.x + radius * 0.7, screen.y + radius * 0.7);
+      ctx.moveTo(screen.x + radius * 0.7, screen.y - radius * 0.7);
+      ctx.lineTo(screen.x - radius * 0.7, screen.y + radius * 0.7);
+      ctx.stroke();
+    }
     ctx.restore();
   }
 
