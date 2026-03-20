@@ -1,4 +1,4 @@
-import { createGameState, resetPlayingSurface, seedChallenge, startMode } from './game/state.js';
+import { addMessage, createGameState, resetPlayingSurface, seedChallenge, setRenderer, startMode } from './game/state.js';
 import { createLoop } from './game/loop.js';
 import { bindInput } from './game/input.js';
 import { createRenderer2D } from './render/renderer2d.js';
@@ -8,6 +8,15 @@ import { createAudioManager } from './audio/manager.js';
 import { simulateTrajectory } from './physics/trajectory.js';
 import { createStone } from './physics/stone.js';
 import { PHYSICS, SHEET } from './physics/constants.js';
+
+function parseRuntimeOptions() {
+  const params = new URLSearchParams(window.location.search);
+  const renderer = params.get('renderer');
+  return {
+    requestedRenderer: renderer === '3d' ? renderer : null,
+    diagnostics: params.get('diagnostics') === '1',
+  };
+}
 
 function createEffectsService() {
   return {
@@ -113,6 +122,7 @@ function hasWebGL() {
 }
 
 function mount() {
+  const runtime = parseRuntimeOptions();
   const root = document.querySelector('#app');
   const ui = createUI(root);
   const state = createGameState();
@@ -120,16 +130,27 @@ function mount() {
   const webglOk = hasWebGL();
   if (!webglOk) {
     state.renderer = '2d';
-    console.warn('WebGL not available — forcing 2D renderer');
+    state.rendererReady = false;
+    state.rendererMessage = 'WebGL unavailable in this browser session. Running in fallback mode.';
+    addMessage(state, 'WebGL was not detected. The simulator switched to fallback mode.');
+    console.warn('WebGL not available — using fallback renderer');
   }
 
   const renderer2d = createRenderer2D(ui.elements.surface2d);
   let renderer3d;
   try {
-    renderer3d = createRenderer3D(ui.elements.surface3d);
+    renderer3d = webglOk ? createRenderer3D(ui.elements.surface3d) : { resize() {}, sync() {}, render() {}, setVisible() {}, dispose() {} };
+    if (webglOk) {
+      state.rendererReady = true;
+      state.renderer = '3d';
+      state.rendererMessage = '3D arena renderer active.';
+    }
   } catch (err) {
     console.warn('3D renderer failed to initialize:', err);
     state.renderer = '2d';
+    state.rendererReady = false;
+    state.rendererMessage = '3D renderer failed to initialize. Running in fallback mode.';
+    addMessage(state, '3D renderer initialization failed. Fallback mode remains active.');
     renderer3d = { resize() {}, sync() {}, render() {}, setVisible() {}, dispose() {} };
   }
   const audio = createAudioManager(state);
@@ -144,16 +165,17 @@ function mount() {
       renderer3d.resize(rect.width, rect.height);
     },
     sync(currentState, movingStone) {
-      renderer2d.setVisible(currentState.renderer === '2d');
-      renderer3d.setVisible(currentState.renderer === '3d');
+      const use3d = currentState.renderer === '3d' && currentState.rendererReady;
+      renderer2d.setVisible(!use3d);
+      renderer3d.setVisible(use3d);
       renderer2d.sync(currentState);
-      renderer3d.sync(currentState, movingStone);
+      if (use3d) renderer3d.sync(currentState, movingStone);
       audio.updateMotion(movingStone, currentState.sweeping);
       multiplayer.sync();
     },
     render() {
-      if (state.renderer === '2d') renderer2d.render();
-      else renderer3d.render();
+      if (state.renderer === '3d' && state.rendererReady) renderer3d.render();
+      else renderer2d.render();
     },
   };
 
@@ -176,7 +198,6 @@ function mount() {
   bindInput(state, {
     surface: ui.elements.overlay,
     overlay: ui.elements.overlay,
-    rendererToggle: ui.elements.rendererToggle,
     cameraSelect: ui.elements.cameraSelect,
     modeSelect: ui.elements.modeSelect,
     weightButtons: ui.elements.weightButtons,
@@ -201,6 +222,17 @@ function mount() {
   window.addEventListener('resize', resize);
   resize();
   startMode(state, 'exhibition');
+  if (runtime.requestedRenderer === '3d') {
+    if (state.rendererReady) {
+      setRenderer(state, '3d');
+      state.rendererMessage = '3D renderer forced by URL parameter.';
+      addMessage(state, 'Renderer override: 3D forced from URL parameter.');
+    } else {
+      state.renderer = '2d';
+      state.rendererMessage = '3D renderer was requested by URL parameter, but this session stayed in fallback mode.';
+      addMessage(state, 'Renderer override requested 3D, but fallback mode stayed active.');
+    }
+  }
   ui.render(state);
   loop.start();
 
@@ -209,6 +241,22 @@ function mount() {
     loop.step(ms);
     return buildTextState(state);
   };
+  window.forceRenderer = (renderer) => {
+    if (renderer === '3d' && state.rendererReady) {
+      setRenderer(state, '3d');
+      ui.render(state);
+      return state.renderer;
+    }
+    return state.renderer;
+  };
+  if (runtime.diagnostics) {
+    window.__curlingDiagnostics = {
+      rendererReady: state.rendererReady,
+      renderer: state.renderer,
+      rendererMessage: state.rendererMessage,
+      webglOk,
+    };
+  }
 
   return {
     state,

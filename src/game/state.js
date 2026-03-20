@@ -27,9 +27,9 @@ export function createGameState() {
   return {
     mode: 'aim',
     gameMode: 'exhibition',
-    renderer: '2d',
+    renderer: '3d',
     rendererReady: false,
-    rendererMessage: '2D renderer active. 3D preview becomes available when WebGL initializes cleanly.',
+    rendererMessage: '3D arena renderer active. Fallback only appears if WebGL fails.',
     cameraMode: 'delivery',
     canThrow: true,
     teams: structuredClone(DEFAULT_TEAMS),
@@ -145,9 +145,11 @@ export function setRenderer(state, renderer) {
     state.renderer = renderer;
     state.needsRenderSync = true;
     state.rendererMessage = renderer === '2d'
-      ? '2D tactical renderer active.'
+      ? 'Fallback renderer active because 3D could not initialize.'
       : '3D arena renderer active.';
-    addMessage(state, `Switched to ${renderer.toUpperCase()} renderer.`);
+    if (renderer === '3d') {
+      addMessage(state, 'Switched to the 3D arena renderer.');
+    }
   }
 }
 

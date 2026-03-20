@@ -95,9 +95,6 @@ export function bindInput(state, elements, services) {
       case 'KeyR':
         toggleSpin(state);
         break;
-      case 'KeyV':
-        services.actions?.toggleRenderer();
-        break;
       case 'KeyC':
         cycleCamera(state);
         break;
@@ -135,7 +132,6 @@ export function bindInput(state, elements, services) {
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);
 
-  elements.rendererToggle?.addEventListener('click', () => services.actions?.toggleRenderer());
   elements.cameraSelect?.addEventListener('change', (event) => setCameraMode(state, event.target.value));
   elements.modeSelect?.addEventListener('change', (event) => startMode(state, event.target.value));
   elements.weightButtons?.forEach((button) => {

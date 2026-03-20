@@ -301,10 +301,9 @@ export function createUI(root) {
         <div class="title-group">
           <span class="eyebrow">Olympic Venue Prototype</span>
           <h1 class="title">Curling Simulator</h1>
-          <p class="subtitle">2D reference, 3D renderer, AI skip, audio, challenges, and experimental multiplayer.</p>
+          <p class="subtitle">3D arena renderer, AI skip, audio, challenges, and experimental multiplayer.</p>
         </div>
         <div class="toolbar">
-          ${button('Toggle Renderer', 'action-button', { id: 'renderer-toggle', type: 'button' })}
           ${button('Reset Sheet', 'action-button', { id: 'reset-button', type: 'button' })}
           ${button('Challenge', 'action-button', { id: 'challenge-button', type: 'button' })}
           ${button('Practice', 'action-button', { id: 'practice-button', type: 'button' })}
@@ -371,7 +370,7 @@ export function createUI(root) {
           <span class="small-label">Controls</span>
           <div class="legend">
             Drag or arrow keys to aim. Hold mouse or press space to charge, release to throw.
-            Q/E sets turn direction. 1–5 swaps shot weight. C cycles cameras. V toggles 2D/3D.
+            Q/E sets turn direction. 1–5 swaps shot weight. C cycles cameras. 3D is the primary view.
           </div>
           <div class="legend is-warning" id="renderer-summary"></div>
         </section>
@@ -438,7 +437,6 @@ export function createUI(root) {
     surface2d: root.querySelector('#surface-2d'),
     surface3d: root.querySelector('#surface-3d'),
     overlay: root.querySelector('#input-overlay'),
-    rendererToggle: root.querySelector('#renderer-toggle'),
     resetButton: root.querySelector('#reset-button'),
     challengeButton: root.querySelector('#challenge-button'),
     practiceButton: root.querySelector('#practice-button'),
