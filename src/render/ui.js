@@ -270,8 +270,11 @@ export function createUI(root) {
       const chargeReady = state.shotTypeCommitted && state.turnCommitted;
       const travelPhase = state.mode === 'travel';
       const activeResult = state.resultChip && state.resultChip.until > performance.now();
+      const activeDelivery = ['aim', 'charge-ready', 'power', 'travel'].includes(state.mode);
+      const clutchStone = state.currentTeam === state.hammerTeam && state.shotNumber >= 15;
 
       elements.shell.dataset.phase = travelPhase ? 'travel' : 'setup';
+      elements.shell.dataset.clutch = clutchStone ? 'true' : 'false';
       elements.modeSelect.value = state.gameMode;
       elements.challengeSelect.value = state.selectedChallengeId ?? CHALLENGES[0]?.id ?? '';
       elements.cameraSelect.value = state.preferredCameraMode;
@@ -299,7 +302,7 @@ export function createUI(root) {
       const summary = `${shotCall.intent.toUpperCase()} · ${shotCall.handle.toUpperCase()} · ${chargePct}% · STONE ${state.shotNumber + 1}/16`;
       elements.shotSummary.textContent = summary;
       elements.travelSummary.textContent = summary;
-      elements.shotSummary.hidden = activeResult;
+      elements.shotSummary.hidden = activeResult || !activeDelivery;
 
       elements.chargeButton.disabled = !chargeReady || !state.canThrow || travelPhase;
       elements.chargeButton.textContent = state.powerArmed ? 'HOLD ON ICE' : 'CHARGE';

@@ -60,6 +60,7 @@ export function createLoop(state, services) {
 
     if (state.mode === 'travel') {
       const movingStone = getMovingStone(state);
+      const clutchStone = state.currentTeam === state.hammerTeam && state.shotNumber >= 16;
       let hadMotion = false;
 
       for (const stone of state.stones) {
@@ -79,7 +80,9 @@ export function createLoop(state, services) {
       services.effects?.updateWake(state, dt, now);
 
       if (state.renderer === '3d' && state.rendererReady && now >= state.cameraHoldUntil) {
-        if (movingStone && movingStone.y >= SHEET.TEE_Y - 3.05) {
+        if (clutchStone && movingStone && movingStone.y >= SHEET.HOG_LINE_Y + 2) {
+          state.cameraMode = 'house';
+        } else if (movingStone && movingStone.y >= SHEET.TEE_Y - 3.05) {
           state.cameraMode = 'house';
         } else {
           state.cameraMode = 'follow';

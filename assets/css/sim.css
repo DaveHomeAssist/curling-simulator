@@ -155,6 +155,21 @@ select {
   background: linear-gradient(180deg, rgba(7, 12, 18, 0.6), rgba(2, 4, 8, 0.4));
 }
 
+.surface-stack::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms ease;
+  background: radial-gradient(circle at center, transparent 52%, rgba(0, 0, 0, 0.38) 100%);
+  z-index: 5;
+}
+
+.mobile-shell[data-clutch="true"] .surface-stack::after {
+  opacity: 1;
+}
+
 .render-surface,
 .input-overlay {
   position: absolute;

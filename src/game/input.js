@@ -169,8 +169,12 @@ export function bindInput(state, elements, services) {
   elements.sweepButton?.addEventListener('pointerleave', stopSweep);
   elements.challengeSelect?.addEventListener('change', (event) => {
     const selected = CHALLENGES.find((challenge) => challenge.id === event.target.value);
-    if (selected) services.actions?.loadChallenge(selected.id);
+    if (selected) {
+      services.actions?.loadChallenge(selected.id);
+      closeModal(state);
+    }
   });
+  elements.modeSelect?.addEventListener('change', () => closeModal(state));
   elements.resetButton?.addEventListener('click', () => services.actions?.resetSurface());
   elements.scoreStrip?.addEventListener('click', () => toggleModal(state, 'history'));
   elements.scoreStrip?.addEventListener('keydown', (event) => {
