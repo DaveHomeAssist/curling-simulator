@@ -38,12 +38,13 @@ function addLights(THREERef, group) {
     [8, 8.5, 8],
   ];
 
-  lightPositions.forEach(([x, y, z]) => {
+  lightPositions.forEach(([x, y, z], index) => {
+    const isCool = index % 2 === 0;
     const bulb = new THREERef.Mesh(
       new THREERef.SphereGeometry(0.18, 16, 12),
       new THREERef.MeshStandardMaterial({
-        color: index % 2 === 0 ? 0xf8fbff : 0x18141d,
-        emissive: index % 2 === 0 ? 0x00ffff : 0xff0040,
+        color: isCool ? 0xf8fbff : 0x18141d,
+        emissive: isCool ? 0x00ffff : 0xff0040,
         emissiveIntensity: 0.6,
         roughness: 0.15,
         metalness: 0.02,
@@ -52,7 +53,7 @@ function addLights(THREERef, group) {
     bulb.position.set(x, y, z);
     group.add(bulb);
 
-    const light = new THREERef.PointLight(index % 2 === 0 ? 0x00ffff : 0xff0040, 600, 45, 2);
+    const light = new THREERef.PointLight(isCool ? 0x00ffff : 0xff0040, 600, 45, 2);
     light.position.set(x, y + 0.4, z);
     group.add(light);
   });

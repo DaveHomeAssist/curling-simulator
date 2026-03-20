@@ -54,7 +54,7 @@ export function createRenderer3D(container) {
     }),
   );
   iceGlow.rotation.x = -Math.PI / 2;
-  iceGlow.position.set(0, 0.015, SHEET.hackToTee);
+  iceGlow.position.set(0, 0.015, SHEET.TEE_Y);
   root.add(iceGlow);
 
   const hemi = new THREE.HemisphereLight(0xf8fdff, 0x250812, 0.82);
