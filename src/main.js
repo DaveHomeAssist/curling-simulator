@@ -146,11 +146,11 @@ function mount() {
       state.rendererMessage = '3D arena renderer active.';
     }
   } catch (err) {
-    console.warn('3D renderer failed to initialize:', err);
+    console.error('3D renderer failed to initialize:', err);
     state.renderer = '2d';
     state.rendererReady = false;
-    state.rendererMessage = '3D renderer failed to initialize. Running in fallback mode.';
-    addMessage(state, '3D renderer initialization failed. Fallback mode remains active.');
+    state.rendererMessage = '3D init error: ' + (err.message || String(err));
+    addMessage(state, '3D error: ' + (err.message || String(err)));
     renderer3d = { resize() {}, sync() {}, render() {}, setVisible() {}, dispose() {} };
   }
   const audio = createAudioManager(state);
