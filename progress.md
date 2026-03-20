@@ -4,3 +4,5 @@ Original prompt: You are working in /Users/daverobertson/Desktop/Code/25-scratch
 - Workspace was effectively empty aside from `index.html` and the two planning docs.
 - Building the requested modules as a self-contained layer with deterministic tests.
 - Assumption: AI evaluation will accept an injected trajectory function in tests because the physics stack is not present in this workspace yet.
+- Scoped Vitest run passed for `src/ai`, `src/audio`, and `src/game/challenges.js`.
+- Remaining limitation: `evaluateShot` still depends on a supplied or global `simulateTrajectory` at runtime until the physics modules are added.

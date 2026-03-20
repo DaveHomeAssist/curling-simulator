@@ -87,10 +87,14 @@ describe('audio generators', () => {
     scrape.start();
     impact.start();
 
-    const [scrapeSource, scrapeFilter] = audioCtx.nodes.filter((node) => node.kind === 'source' || node.kind === 'filter').slice(0, 2);
+    const sources = audioCtx.nodes.filter((node) => node.kind === 'source');
+    const filters = audioCtx.nodes.filter((node) => node.kind === 'filter');
+    const [scrapeSource] = sources;
+    const [scrapeFilter] = filters;
     expect(scrapeSource.buffer).toBeTruthy();
     expect(scrapeFilter.type).toBe('bandpass');
     expect(scrapeSource.start).toHaveBeenCalledTimes(1);
+    expect(sources[1].start).toHaveBeenCalledTimes(1);
     expect(impact.node.gain.value).toBeGreaterThan(0);
   });
 });

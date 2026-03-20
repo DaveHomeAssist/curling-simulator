@@ -7,19 +7,24 @@ afterEach(() => {
 });
 
 function createAudioContext() {
-  return {
+  const audioCtx = {
     destination: { kind: 'destination' },
+    lastGain: null,
     createBufferSource: () => ({
       connect: vi.fn(),
       start: vi.fn(),
       buffer: null,
     }),
-    createGain: () => ({
-      connect: vi.fn(),
-      gain: { value: 0 },
-    }),
+    createGain: () => {
+      audioCtx.lastGain = {
+        connect: vi.fn(),
+        gain: { value: 0 },
+      };
+      return audioCtx.lastGain;
+    },
     decodeAudioData: vi.fn(async (arrayBuffer) => ({ decoded: arrayBuffer.byteLength })),
   };
+  return audioCtx;
 }
 
 describe('loadSamples', () => {
@@ -70,6 +75,6 @@ describe('playSample', () => {
     expect(source.buffer).toEqual({ id: 'buffer' });
     expect(source.start).toHaveBeenCalledTimes(1);
     expect(source.connect).toHaveBeenCalledTimes(1);
-    expect(audioCtx.createGain().gain.value).not.toBe(0);
+    expect(audioCtx.lastGain.gain.value).toBe(0.5);
   });
 });

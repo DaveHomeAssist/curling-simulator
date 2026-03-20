@@ -10,6 +10,7 @@ const DEFAULT_TEAMS = {
 };
 
 const CAMERA_SEQUENCE = ['delivery', 'follow', 'house', 'broadcast', 'free'];
+const RELEASE_SPIN = 2.2;
 
 function makeScoreboard() {
   return {
@@ -49,7 +50,7 @@ export function createGameState() {
       peel: { label: 'Peel', velocity: 7.15 },
     },
     aimX: 0,
-    aimY: SHEET.teeY,
+    aimY: SHEET.TEE_Y,
     spin: 1,
     powerCharge: 0.45,
     powerDirection: 1,
@@ -146,7 +147,7 @@ export function setRenderer(state, renderer) {
 }
 
 export function setAim(state, x) {
-  const halfWidth = SHEET.width / 2 - PHYSICS.stoneRadius * 1.15;
+  const halfWidth = SHEET.WIDTH / 2 - PHYSICS.STONE_RADIUS * 1.15;
   state.aimX = Math.max(-halfWidth, Math.min(halfWidth, x));
   state.dirtyPreview = true;
 }
@@ -203,9 +204,9 @@ export function releaseShot(state, now = performance.now()) {
 
   const preset = state.weightPresets[state.selectedWeight];
   const baseVelocity = preset.velocity * (0.6 + state.powerCharge * 0.75);
-  const releaseY = SHEET.hackY + PHYSICS.stoneRadius * 3.2;
+  const releaseY = SHEET.HACK_Y + PHYSICS.STONE_RADIUS * 3.2;
   const x0 = state.aimX * 0.24;
-  const stone = createStone(x0, baseVelocity, state.spin * PHYSICS.maxSpin, state.currentTeam, state.shotNumber);
+  const stone = createStone(x0, baseVelocity, state.spin * RELEASE_SPIN, state.currentTeam, state.shotNumber);
 
   stone.y = releaseY;
   stone.releasedAt = now;
@@ -249,8 +250,8 @@ export function updatePreview(state) {
 
   const preset = state.weightPresets[state.selectedWeight];
   const baseVelocity = preset.velocity * (0.6 + state.powerCharge * 0.75);
-  const proto = createStone(state.aimX * 0.24, baseVelocity, state.spin * PHYSICS.maxSpin, state.currentTeam, 'preview');
-  proto.y = SHEET.hackY + PHYSICS.stoneRadius * 3.2;
+  const proto = createStone(state.aimX * 0.24, baseVelocity, state.spin * RELEASE_SPIN, state.currentTeam, 'preview');
+  proto.y = SHEET.HACK_Y + PHYSICS.STONE_RADIUS * 3.2;
   const sim = simulateTrajectory(proto, state.stones, { sampleEvery: 4 });
   state.preview = sim.trajectory;
   state.dirtyPreview = false;
@@ -288,9 +289,9 @@ function updateChallengeResult(state) {
   const dy = latestStone.y - challenge.target.y;
   const dist = Math.hypot(dx, dy);
   let medal = 'none';
-  if (dist <= challenge.gold) medal = 'gold';
-  else if (dist <= challenge.silver) medal = 'silver';
-  else if (dist <= challenge.bronze) medal = 'bronze';
+  if (dist <= challenge.thresholds.gold) medal = 'gold';
+  else if (dist <= challenge.thresholds.silver) medal = 'silver';
+  else if (dist <= challenge.thresholds.bronze) medal = 'bronze';
   state.challengeResult = dist;
   state.challengeMedal = medal;
   state.stats.bestChallenge[challenge.id] = Math.min(state.stats.bestChallenge[challenge.id] ?? Number.POSITIVE_INFINITY, dist);
@@ -385,7 +386,15 @@ export function seedChallenge(state, challengeId = state.selectedChallengeId) {
   });
   state.challengeResult = null;
   state.challengeMedal = null;
-  state.selectedWeight = challenge.shotType === 'draw' ? 'draw' : challenge.shotType === 'guard' ? 'guard' : 'takeout';
+  state.selectedWeight = challenge.shotType === 'draw'
+    ? 'draw'
+    : challenge.shotType === 'guard'
+      ? 'guard'
+      : challenge.shotType === 'freeze'
+        ? 'draw'
+        : challenge.shotType === 'peel'
+          ? 'peel'
+          : 'takeout';
   addMessage(state, `Challenge loaded: ${challenge.name}`);
 }
 

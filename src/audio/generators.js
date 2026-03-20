@@ -20,7 +20,8 @@ function buildNoiseBuffer(audioCtx, durationSeconds, color = 'white') {
   const channel = buffer.getChannelData(0);
   let last = 0;
   for (let index = 0; index < channel.length; index += 1) {
-    const white = Math.random() * 2 - 1;
+    const seed = Math.sin(index * 12.9898 + durationSeconds * 78.233) * 43758.5453;
+    const white = (seed - Math.floor(seed)) * 2 - 1;
     if (color === 'brown') {
       last = clamp(last + white * 0.02, -1, 1);
       channel[index] = last * 3.5;
