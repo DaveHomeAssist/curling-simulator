@@ -189,8 +189,8 @@ export function createUI(root) {
 
           <div class="drawer-detail" id="settings-detail"></div>
 
-          <div class="help-section">
-            <div class="help-heading">How to Play</div>
+          <details class="help-section">
+            <summary class="help-heading">How to Play</summary>
 
             <div class="help-block">
               <div class="help-subhead">The Basics</div>
@@ -270,7 +270,7 @@ export function createUI(root) {
                 <dt>Free</dt><dd>Unlocked orbit camera.</dd>
               </dl>
             </div>
-          </div>
+          </details>
         </div>
       </div>
     </div>
