@@ -20,7 +20,7 @@ function addSeatingRows(THREERef, group) {
     const row = new THREERef.Mesh(
       new THREERef.BoxGeometry(rowWidth - index * 0.8, 0.55, 1.2),
       new THREERef.MeshStandardMaterial({
-        color: index % 2 === 0 ? 0x273043 : 0x1c2431,
+        color: index % 2 === 0 ? 0x140915 : 0x08090d,
         roughness: 0.94,
         metalness: 0.02,
       }),
@@ -42,8 +42,8 @@ function addLights(THREERef, group) {
     const bulb = new THREERef.Mesh(
       new THREERef.SphereGeometry(0.18, 16, 12),
       new THREERef.MeshStandardMaterial({
-        color: 0xf8f8ff,
-        emissive: 0xcddcff,
+        color: index % 2 === 0 ? 0xf8fbff : 0x18141d,
+        emissive: index % 2 === 0 ? 0x00ffff : 0xff0040,
         emissiveIntensity: 0.6,
         roughness: 0.15,
         metalness: 0.02,
@@ -52,7 +52,7 @@ function addLights(THREERef, group) {
     bulb.position.set(x, y, z);
     group.add(bulb);
 
-    const light = new THREERef.PointLight(0xd8e8ff, 600, 45, 2);
+    const light = new THREERef.PointLight(index % 2 === 0 ? 0x00ffff : 0xff0040, 600, 45, 2);
     light.position.set(x, y + 0.4, z);
     group.add(light);
   });
@@ -68,7 +68,7 @@ export function buildArena(THREERef = globalThis.THREE) {
 
   const floor = new THREE.Mesh(
     new THREE.BoxGeometry(SHEET.width + 20, 0.25, SHEET.length + 28),
-    new THREE.MeshStandardMaterial({
+      new THREE.MeshStandardMaterial({
       color: COLORS.arenaDark,
       roughness: 1,
       metalness: 0.02,
@@ -79,7 +79,7 @@ export function buildArena(THREERef = globalThis.THREE) {
 
   const shell = new THREE.Mesh(
     new THREE.BoxGeometry(SHEET.width + 24, 14, SHEET.length + 34),
-    new THREE.MeshStandardMaterial({
+      new THREE.MeshStandardMaterial({
       color: COLORS.arenaLight,
       roughness: 0.9,
       metalness: 0.06,
@@ -93,7 +93,7 @@ export function buildArena(THREERef = globalThis.THREE) {
 
   addSeatingRows(THREE, group);
 
-  const roofBeam = makeBeam(THREE, SHEET.width + 18, 0.25, 0.45, 0x39465d);
+  const roofBeam = makeBeam(THREE, SHEET.width + 18, 0.25, 0.45, 0x0f1016);
   roofBeam.position.set(0, 10.2, 7.5);
   group.add(roofBeam);
 
@@ -104,7 +104,7 @@ export function buildArena(THREERef = globalThis.THREE) {
   const scoreboard = new THREE.Mesh(
     new THREE.PlaneGeometry(4.6, 2.2),
     new THREE.MeshStandardMaterial({
-      color: 0x101520,
+      color: 0x07080c,
       roughness: 0.65,
       metalness: 0.1,
     }),
@@ -114,10 +114,10 @@ export function buildArena(THREERef = globalThis.THREE) {
 
   addLights(THREE, group);
 
-  const ambient = new THREE.AmbientLight(0x74839f, 0.68);
+  const ambient = new THREE.AmbientLight(0x2b3041, 0.62);
   group.add(ambient);
 
-  const rim = new THREE.DirectionalLight(0xbdd3ff, 1.1);
+  const rim = new THREE.DirectionalLight(0x00ffff, 0.95);
   rim.position.set(-8, 12, 10);
   group.add(rim);
 

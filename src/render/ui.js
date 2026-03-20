@@ -21,13 +21,20 @@ export function createUI(root) {
         grid-template-rows: auto 1fr auto;
         gap: 14px;
         padding: 16px;
+        color: #f4f6fb;
+        background:
+          radial-gradient(circle at 18% 10%, rgba(0, 255, 255, 0.12), transparent 18%),
+          radial-gradient(circle at 82% 14%, rgba(255, 0, 64, 0.10), transparent 20%),
+          radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03), transparent 38%);
       }
 
       .panel {
-        background: rgba(10, 18, 29, 0.88);
-        border: 1px solid rgba(152, 187, 233, 0.14);
+        background: rgba(3, 4, 8, 0.92);
+        border: 1px solid rgba(0, 255, 255, 0.18);
         border-radius: 18px;
-        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+        box-shadow:
+          0 24px 80px rgba(0, 0, 0, 0.45),
+          0 0 0 1px rgba(255, 0, 64, 0.05) inset;
         backdrop-filter: blur(16px);
       }
 
@@ -50,20 +57,27 @@ export function createUI(root) {
       }
 
       .eyebrow {
-        color: #8bb7e5;
+        color: #00ffff;
+        font-family: 'Major Mono Display', monospace;
         text-transform: uppercase;
-        letter-spacing: 0.16em;
-        font-size: 11px;
+        letter-spacing: 0.18em;
+        font-size: 10px;
       }
 
       .title {
+        font-family: 'Major Mono Display', monospace;
         font-size: 28px;
-        font-weight: 800;
+        font-weight: 400;
+        letter-spacing: 0.04em;
+        color: #f7fbff;
+        text-shadow: -2px 0 #ff0040, 2px 0 #00ffff;
       }
 
       .subtitle {
-        color: #c1d6ec;
-        font-size: 14px;
+        color: #cfd7ec;
+        font-family: 'VT323', monospace;
+        font-size: 20px;
+        letter-spacing: 0.04em;
       }
 
       .left-panel, .right-panel {
@@ -115,9 +129,9 @@ export function createUI(root) {
       .pill {
         border-radius: 999px;
         padding: 7px 11px;
-        background: rgba(6, 14, 22, 0.74);
-        border: 1px solid rgba(158, 192, 231, 0.14);
-        color: #dfeefe;
+        background: rgba(4, 5, 10, 0.82);
+        border: 1px solid rgba(0, 255, 255, 0.18);
+        color: #f2fbff;
         font-size: 12px;
       }
 
@@ -140,10 +154,11 @@ export function createUI(root) {
 
       .control-group label,
       .small-label {
-        color: #9ab7d3;
-        font-size: 12px;
+        color: #00ffff;
+        font-family: 'Major Mono Display', monospace;
+        font-size: 10px;
         text-transform: uppercase;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.14em;
       }
 
       select, button {
@@ -153,10 +168,12 @@ export function createUI(root) {
       select, .action-button {
         width: 100%;
         border-radius: 12px;
-        border: 1px solid rgba(145, 177, 214, 0.14);
-        background: rgba(9, 17, 28, 0.78);
-        color: #ecf5ff;
+        border: 1px solid rgba(0, 255, 255, 0.16);
+        background: rgba(5, 6, 10, 0.84);
+        color: #f3f8ff;
         padding: 11px 12px;
+        font-family: 'VT323', monospace;
+        letter-spacing: 0.04em;
       }
 
       .action-button {
@@ -166,36 +183,38 @@ export function createUI(root) {
 
       .action-button:hover {
         transform: translateY(-1px);
-        border-color: rgba(172, 205, 244, 0.28);
-        background: rgba(18, 30, 46, 0.92);
+        border-color: rgba(0, 255, 255, 0.35);
+        background: rgba(14, 18, 30, 0.94);
       }
 
       .action-button.is-primary {
-        background: linear-gradient(135deg, #2b73cb 0%, #5594e5 100%);
+        background: linear-gradient(135deg, #00ffff 0%, #2a6fff 100%);
         color: #f9fdff;
       }
 
       .action-button.is-accent {
-        background: linear-gradient(135deg, #bb4b49 0%, #d06a58 100%);
+        background: linear-gradient(135deg, #ff0040 0%, #d03b5d 100%);
       }
 
       .preset-button[data-active="true"] {
-        background: rgba(67, 118, 183, 0.48);
-        border-color: rgba(178, 214, 255, 0.32);
+        background: rgba(0, 255, 255, 0.16);
+        border-color: rgba(0, 255, 255, 0.4);
+        box-shadow: 0 0 0 1px rgba(255, 0, 64, 0.14) inset;
       }
 
       .stat-card {
         padding: 14px;
         border-radius: 16px;
-        background: rgba(8, 16, 26, 0.76);
-        border: 1px solid rgba(145, 177, 214, 0.1);
+        background: rgba(4, 6, 12, 0.84);
+        border: 1px solid rgba(0, 255, 255, 0.12);
       }
 
       .stat-label {
-        color: #87a6c6;
-        font-size: 12px;
+        color: #00ffff;
+        font-family: 'Major Mono Display', monospace;
+        font-size: 10px;
         text-transform: uppercase;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.14em;
       }
 
       .stat-value {
@@ -221,9 +240,9 @@ export function createUI(root) {
       .message-item {
         padding: 12px 14px;
         border-radius: 14px;
-        background: rgba(8, 14, 23, 0.9);
-        border: 1px solid rgba(145, 177, 214, 0.08);
-        color: #cfe2f7;
+        background: rgba(4, 5, 9, 0.9);
+        border: 1px solid rgba(0, 255, 255, 0.09);
+        color: #edf5ff;
         line-height: 1.45;
       }
 
@@ -240,10 +259,11 @@ export function createUI(root) {
       }
 
       .scoreboard-table th {
-        color: #90b1cf;
-        font-size: 11px;
+        color: #00ffff;
+        font-family: 'Major Mono Display', monospace;
+        font-size: 10px;
         text-transform: uppercase;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.14em;
       }
 
       .hud {
@@ -261,24 +281,24 @@ export function createUI(root) {
         width: 100%;
         height: 14px;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.06);
         overflow: hidden;
       }
 
       .meter-fill {
         height: 100%;
         width: 0%;
-        background: linear-gradient(90deg, #79b5ff, #e8f4ff, #efb16b);
+        background: linear-gradient(90deg, #00ffff, #f7fbff 55%, #ff0040);
       }
 
       .legend {
-        color: #98b8d8;
+        color: #d4daf0;
         font-size: 13px;
         line-height: 1.55;
       }
 
       .legend.is-warning {
-        color: #ffd3a2;
+        color: #ff9aaf;
       }
 
       @media (max-width: 1260px) {
@@ -299,9 +319,9 @@ export function createUI(root) {
     <div class="curling-shell">
       <header class="panel header">
         <div class="title-group">
-          <span class="eyebrow">Olympic Venue Prototype</span>
+          <span class="eyebrow">T27 / Glitch Arena</span>
           <h1 class="title">Curling Simulator</h1>
-          <p class="subtitle">3D arena renderer, AI skip, audio, challenges, and experimental multiplayer.</p>
+          <p class="subtitle">Black / cyan / red glitch theme, 3D arena renderer, AI skip, audio, challenges, and experimental multiplayer.</p>
         </div>
         <div class="toolbar">
           ${button('Reset Sheet', 'action-button', { id: 'reset-button', type: 'button' })}

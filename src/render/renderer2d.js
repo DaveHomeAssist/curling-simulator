@@ -5,8 +5,12 @@ function makeScale(canvas) {
   const padding = 36;
   const usableWidth = canvas.clientWidth - padding * 2;
   const usableHeight = canvas.clientHeight - padding * 2;
-  const scale = Math.min(usableWidth / SHEET.WIDTH, usableHeight / SHEET.LENGTH);
-  return { padding, scale };
+  const scale = Math.min(usableWidth / SHEET.LENGTH, usableHeight / SHEET.WIDTH);
+  const rinkWidth = SHEET.LENGTH * scale;
+  const rinkHeight = SHEET.WIDTH * scale;
+  const left = padding + (usableWidth - rinkWidth) / 2;
+  const top = padding + (usableHeight - rinkHeight) / 2;
+  return { padding, scale, left, top, rinkWidth, rinkHeight };
 }
 
 export function createRenderer2D(canvas) {
@@ -24,61 +28,63 @@ export function createRenderer2D(canvas) {
   }
 
   function worldToScreen(x, y) {
-    const { padding, scale } = makeScale(canvas);
-    const screenX = padding + ((x + SHEET.WIDTH / 2) * scale);
-    const screenY = padding + (y * scale);
+    const { scale, left, top } = makeScale(canvas);
+    const screenX = left + (y * scale);
+    const screenY = top + ((SHEET.WIDTH / 2 - x) * scale);
     return { x: screenX, y: screenY };
   }
 
   function drawSheet() {
-    const { padding, scale } = makeScale(canvas);
-    const width = SHEET.WIDTH * scale;
-    const length = SHEET.LENGTH * scale;
-    const left = padding;
-    const top = padding;
+    const { scale, left, top, rinkWidth, rinkHeight } = makeScale(canvas);
 
     ctx.save();
     ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
-    const bg = ctx.createLinearGradient(0, top, 0, top + length);
-    bg.addColorStop(0, '#dceeff');
-    bg.addColorStop(1, '#b9ddf6');
+    const bg = ctx.createLinearGradient(left, top, left + rinkWidth, top + rinkHeight);
+    bg.addColorStop(0, '#050507');
+    bg.addColorStop(0.45, '#0b0d14');
+    bg.addColorStop(1, '#050507');
     ctx.fillStyle = bg;
-    ctx.fillRect(left, top, width, length);
+    ctx.fillRect(left, top, rinkWidth, rinkHeight);
 
-    ctx.strokeStyle = '#214867';
+    ctx.strokeStyle = '#00ffff';
     ctx.lineWidth = 4;
-    ctx.strokeRect(left, top, width, length);
+    ctx.strokeRect(left, top, rinkWidth, rinkHeight);
 
-    const line = (y, color, dash = []) => {
+    const line = (y, color, dash = [], vertical = true) => {
       ctx.beginPath();
       ctx.setLineDash(dash);
       ctx.strokeStyle = color;
       ctx.lineWidth = 3;
-      ctx.moveTo(left, top + y * scale);
-      ctx.lineTo(left + width, top + y * scale);
+      if (vertical) {
+        ctx.moveTo(left + y * scale, top);
+        ctx.lineTo(left + y * scale, top + rinkHeight);
+      } else {
+        ctx.moveTo(left, top + y * scale);
+        ctx.lineTo(left + rinkWidth, top + y * scale);
+      }
       ctx.stroke();
       ctx.setLineDash([]);
     };
 
-    line(SHEET.HOG_LINE_Y, '#d74845');
-    line(SHEET.BACK_LINE_Y, '#2e6dc4');
-    line(SHEET.TEE_Y, '#2e6dc4');
+    line(SHEET.HOG_LINE_Y, '#ff0040');
+    line(SHEET.BACK_LINE_Y, '#00ffff');
+    line(SHEET.TEE_Y, '#00ffff');
 
     ctx.beginPath();
     ctx.setLineDash([10, 10]);
-    ctx.strokeStyle = '#3a74af';
+    ctx.strokeStyle = '#ff0040';
     ctx.lineWidth = 2;
-    ctx.moveTo(left + width / 2, top);
-    ctx.lineTo(left + width / 2, top + length);
+    ctx.moveTo(left, top + rinkHeight / 2);
+    ctx.lineTo(left + rinkWidth, top + rinkHeight / 2);
     ctx.stroke();
     ctx.setLineDash([]);
 
     const tee = worldToScreen(0, SHEET.TEE_Y);
     const rings = [
-      { r: 1.83, color: '#d64f48' },
-      { r: 1.22, color: '#ffffff' },
-      { r: 0.61, color: '#2a6dc7' },
-      { r: 0.15, color: '#ffffff' },
+      { r: 1.83, color: '#ff0040' },
+      { r: 1.22, color: '#f7fbff' },
+      { r: 0.61, color: '#00ffff' },
+      { r: 0.15, color: '#f7fbff' },
     ];
     for (const ring of rings) {
       ctx.beginPath();
@@ -87,14 +93,14 @@ export function createRenderer2D(canvas) {
       ctx.fill();
     }
     ctx.beginPath();
-    ctx.fillStyle = '#1d3d5b';
+    ctx.fillStyle = '#050507';
     ctx.arc(tee.x, tee.y, 3, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = '#0d1a26';
+    ctx.fillStyle = '#00ffff';
     ctx.font = '600 12px system-ui';
-    ctx.fillText('Hack', left + width / 2 - 16, top + 16);
-    ctx.fillText('House', left + width + 12, tee.y + 4);
+    ctx.fillText('Hack', left + 8, top + rinkHeight / 2 - 12);
+    ctx.fillText('House', left + rinkWidth - 48, tee.y - 18);
     ctx.restore();
   }
 
@@ -208,13 +214,13 @@ export function createRenderer2D(canvas) {
     const hack = worldToScreen(0, SHEET.HACK_Y + PHYSICS.STONE_RADIUS * 2.2);
     const broom = worldToScreen(state.aimX, SHEET.TEE_Y - 1.6);
     ctx.save();
-    ctx.strokeStyle = state.spin > 0 ? '#9ed0ff' : '#ffc89e';
+    ctx.strokeStyle = state.spin > 0 ? '#00ffff' : '#ff0040';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(hack.x, hack.y);
     ctx.lineTo(broom.x, broom.y);
     ctx.stroke();
-    ctx.fillStyle = '#1e3e63';
+    ctx.fillStyle = '#00ffff';
     ctx.fillRect(broom.x - 18, broom.y - 4, 36, 8);
     ctx.restore();
   }

@@ -29,7 +29,7 @@ function makeNumberLabel(THREERef, number) {
   ctx.beginPath();
   ctx.arc(size / 2, size / 2, size * 0.42, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#142033';
+  ctx.fillStyle = '#050507';
   ctx.font = 'bold 64px system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -43,7 +43,7 @@ function makeNumberLabel(THREERef, number) {
 
 function addHandle(THREERef, group) {
   const handleMaterial = new THREERef.MeshStandardMaterial({
-    color: 0x2d7bd9,
+    color: 0x00ffff,
     roughness: 0.35,
     metalness: 0.16,
   });

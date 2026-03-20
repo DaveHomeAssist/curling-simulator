@@ -5,8 +5,8 @@ import { buildArena } from './models/arena.js';
 import { PHYSICS, SHEET } from '../physics/constants.js';
 
 const CAMERA_POSES = {
-  delivery: { position: [0, 4.4, -1.4], target: [0, 0.2, 16] },
-  follow: { position: [0, 3.4, -2.2], target: [0, 0.2, 12] },
+  delivery: { position: [0, 5.6, -4.8], target: [0, 0.18, 18.5] },
+  follow: { position: [0, 4.7, -5.6], target: [0, 0.18, 14.5] },
   house: { position: [0, 10.5, 23.47], target: [0, 0, 23.47] },
   broadcast: { position: [7.8, 6.6, 20], target: [0, 0, 24] },
   free: { position: [0, 9, 8], target: [0, 0, 20] },
@@ -22,14 +22,16 @@ function worldToScene(stone) {
 
 export function createRenderer3D(container) {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x08111c);
-  scene.fog = new THREE.Fog(0x08111c, 18, 70);
+  scene.background = new THREE.Color(0x050507);
+  scene.fog = new THREE.Fog(0x050507, 22, 88);
 
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
-  camera.position.set(0, 4.4, -1.4);
-  camera.lookAt(0, 0.2, 16);
+  camera.position.set(0, 5.6, -4.8);
+  camera.lookAt(0, 0.18, 18.5);
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
   renderer.shadowMap.enabled = true;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.domElement.style.display = 'block';
   renderer.domElement.style.width = '100%';
@@ -41,12 +43,35 @@ export function createRenderer3D(container) {
   root.add(buildArena(THREE));
   root.add(buildSheet(THREE));
 
-  const hemi = new THREE.HemisphereLight(0xdcecff, 0x172236, 0.55);
+  const iceGlow = new THREE.Mesh(
+    new THREE.CircleGeometry(7.5, 64),
+    new THREE.MeshBasicMaterial({
+      color: 0x00ffff,
+      transparent: true,
+      opacity: 0.11,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    }),
+  );
+  iceGlow.rotation.x = -Math.PI / 2;
+  iceGlow.position.set(0, 0.015, SHEET.hackToTee);
+  root.add(iceGlow);
+
+  const hemi = new THREE.HemisphereLight(0xf8fdff, 0x250812, 0.82);
   scene.add(hemi);
 
-  const spot = new THREE.SpotLight(0xe8f4ff, 2.2, 90, 0.5, 0.35, 1.6);
-  spot.position.set(0, 14, 12);
-  spot.target.position.set(0, 0, 22);
+  const keyLight = new THREE.DirectionalLight(0x00ffff, 1.5);
+  keyLight.position.set(0, 12, 10);
+  keyLight.castShadow = true;
+  scene.add(keyLight);
+
+  const fillLight = new THREE.DirectionalLight(0xff0040, 0.7);
+  fillLight.position.set(-8, 8, -6);
+  scene.add(fillLight);
+
+  const spot = new THREE.SpotLight(0xf7fbff, 2.5, 120, 0.42, 0.3, 1.4);
+  spot.position.set(0, 16, 14);
+  spot.target.position.set(0, 0.2, 21);
   spot.castShadow = true;
   scene.add(spot);
   scene.add(spot.target);
@@ -54,7 +79,7 @@ export function createRenderer3D(container) {
   const stoneMeshes = new Map();
   const aimGroup = new THREE.Group();
   const aimLineMaterial = new THREE.LineDashedMaterial({
-    color: 0xffffff,
+    color: 0x00ffff,
     dashSize: 0.3,
     gapSize: 0.18,
     transparent: true,
@@ -86,11 +111,11 @@ export function createRenderer3D(container) {
   function setCamera(state, movingStone) {
     const pose = CAMERA_POSES[state.cameraMode] ?? CAMERA_POSES.delivery;
     const focusZ = movingStone ? movingStone.y : pose.target[2];
-    const focusX = movingStone ? movingStone.x * 0.28 : pose.target[0];
+    const focusX = movingStone ? movingStone.x * 0.3 : pose.target[0];
     const desired = new THREE.Vector3(
-      pose.position[0] + (state.cameraMode === 'follow' && movingStone ? movingStone.x * 0.22 : 0),
+      pose.position[0] + (state.cameraMode === 'follow' && movingStone ? movingStone.x * 0.24 : 0),
       pose.position[1],
-      pose.position[2] + (state.cameraMode === 'follow' && movingStone ? movingStone.y - 10 : 0),
+      pose.position[2] + (state.cameraMode === 'follow' && movingStone ? movingStone.y - 12 : 0),
     );
     camera.position.lerp(desired, 0.08);
     camera.lookAt(focusX, pose.target[1], focusZ);

@@ -40,3 +40,7 @@ Original prompt: complete all phases without asking again. execute all phases, c
   - kept fallback rendering only for WebGL failure / 3D init failure
   - removed the last user-facing 2D wording so the app presents as 3D-first
   - browser screenshot validation is still blocked by the local Chrome/Playwright GPU crash in this environment
+- Theme pass:
+  - mapped the curling app onto the t27 glitch palette
+  - switched the shell to black / cyan / red styling
+  - aligned the 2D fallback and 3D arena materials with the same palette
