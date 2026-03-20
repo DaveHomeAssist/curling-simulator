@@ -105,12 +105,33 @@ function createAiAdapter() {
   };
 }
 
+function hasWebGL() {
+  try {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') || c.getContext('webgl'));
+  } catch { return false; }
+}
+
 function mount() {
   const root = document.querySelector('#app');
   const ui = createUI(root);
   const state = createGameState();
+
+  const webglOk = hasWebGL();
+  if (!webglOk) {
+    state.renderer = '2d';
+    console.warn('WebGL not available — forcing 2D renderer');
+  }
+
   const renderer2d = createRenderer2D(ui.elements.surface2d);
-  const renderer3d = createRenderer3D(ui.elements.surface3d);
+  let renderer3d;
+  try {
+    renderer3d = createRenderer3D(ui.elements.surface3d);
+  } catch (err) {
+    console.warn('3D renderer failed to initialize:', err);
+    state.renderer = '2d';
+    renderer3d = { resize() {}, sync() {}, render() {}, setVisible() {}, dispose() {} };
+  }
   const audio = createAudioManager(state);
   const effects = createEffectsService();
   const multiplayer = createMultiplayerService(state);

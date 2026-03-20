@@ -27,7 +27,9 @@ export function createGameState() {
   return {
     mode: 'aim',
     gameMode: 'exhibition',
-    renderer: '3d',
+    renderer: '2d',
+    rendererReady: false,
+    rendererMessage: '2D renderer active. 3D preview becomes available when WebGL initializes cleanly.',
     cameraMode: 'delivery',
     canThrow: true,
     teams: structuredClone(DEFAULT_TEAMS),
@@ -142,6 +144,9 @@ export function setRenderer(state, renderer) {
   if (renderer === '2d' || renderer === '3d') {
     state.renderer = renderer;
     state.needsRenderSync = true;
+    state.rendererMessage = renderer === '2d'
+      ? '2D tactical renderer active.'
+      : '3D arena renderer active.';
     addMessage(state, `Switched to ${renderer.toUpperCase()} renderer.`);
   }
 }
