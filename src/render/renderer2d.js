@@ -2,8 +2,8 @@ import { PHYSICS, SHEET } from '../physics/constants.js';
 
 function makeScale(canvas) {
   const padding = 36;
-  const usableWidth = canvas.width - padding * 2;
-  const usableHeight = canvas.height - padding * 2;
+  const usableWidth = canvas.clientWidth - padding * 2;
+  const usableHeight = canvas.clientHeight - padding * 2;
   const scale = Math.min(usableWidth / SHEET.WIDTH, usableHeight / SHEET.LENGTH);
   return { padding, scale };
 }
