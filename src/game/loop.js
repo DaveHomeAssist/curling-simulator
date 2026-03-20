@@ -64,7 +64,13 @@ export function createLoop(state, services) {
       let hadMotion = false;
 
       for (const stone of state.stones) {
-        stepPhysics(stone, dt, state.sweeping && stone.id === state.movingStoneId);
+        const isSweeping = state.sweeping && stone.id === state.movingStoneId;
+        stepPhysics(stone, dt, isSweeping, state.pebbleWear);
+        // Accumulate pebble wear from stone travel
+        const stoneSpeed = Math.hypot(stone.vx, stone.vy);
+        if (stoneSpeed > 0.05) {
+          state.pebbleWear = Math.min(1, state.pebbleWear + 0.0003 * stoneSpeed * dt);
+        }
         enforceSheetBounds(stone);
         hadMotion ||= Math.abs(stone.vx) > 0.01 || Math.abs(stone.vy) > 0.01;
       }

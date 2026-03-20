@@ -33,4 +33,8 @@ export const PHYSICS = deepFreeze({
   STOP_SPEED: 0.008,
   STOP_SPIN: 0.01,
   COLLISION_EPSILON: 0.01,
+  // Pebble wear: friction increases as ice is worn by stone traffic
+  PEBBLE_WEAR_RATE: 0.0003,    // wear per metre of stone travel
+  PEBBLE_WEAR_MU_SCALE: 0.25,  // max μ increase at full wear
+  PEBBLE_RESET_RESIDUAL: 0.05, // residual wear after between-end re-pebble
 });

@@ -20,13 +20,14 @@ export function createStone(x0, v0, omega0, team, idx) {
   };
 }
 
-function effectiveMu(speed, sweeping) {
+function effectiveMu(speed, sweeping, pebbleWear = 0) {
   const base = PHYSICS.MU_BASE * Math.pow(Math.max(speed, SPEED_FLOOR), -PHYSICS.MU_VELOCITY_EXPONENT);
-  const mu = sweeping ? base * PHYSICS.SWEEP_FRICTION_MULTIPLIER : base;
+  const wearBoost = 1 + pebbleWear * PHYSICS.PEBBLE_WEAR_MU_SCALE;
+  const mu = (sweeping ? base * PHYSICS.SWEEP_FRICTION_MULTIPLIER : base) * wearBoost;
   return Math.min(mu, 0.06);
 }
 
-export function stepPhysics(stone, dt, sweeping = false) {
+export function stepPhysics(stone, dt, sweeping = false, pebbleWear = 0) {
   if (!stone || stone.removed || !stone.inPlay) {
     return stone;
   }
@@ -44,7 +45,7 @@ export function stepPhysics(stone, dt, sweeping = false) {
     return stone;
   }
 
-  const mu = effectiveMu(speed, sweeping);
+  const mu = effectiveMu(speed, sweeping, pebbleWear);
   const decel = mu * GRAVITY * dt;
   const nextSpeed = Math.max(0, speed - decel);
 

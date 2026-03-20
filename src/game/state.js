@@ -285,6 +285,7 @@ export function createGameState() {
       lastImpact: 0,
     },
     resultChip: null,
+    pebbleWear: 0,
     effects: {
       sweepTrail: [],
       wakeTrail: [],
@@ -600,6 +601,7 @@ export function prepareNextEnd(state) {
   state.stonesRemainingByTeam = { red: 8, yel: 8 };
   state.stones = [];
   state.preview = [];
+  state.pebbleWear = 0.05; // residual wear after between-end re-pebble
   state.mode = 'aim';
   state.canThrow = true;
   state.challengeResult = null;

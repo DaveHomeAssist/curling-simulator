@@ -224,7 +224,12 @@ function mount() {
     renderBridge.render();
   }
 
-  window.addEventListener('resize', resize);
+  const resizeTarget = ui.elements.surface3d || ui.elements.overlay;
+  if (typeof ResizeObserver !== 'undefined' && resizeTarget) {
+    new ResizeObserver(() => resize()).observe(resizeTarget);
+  } else {
+    window.addEventListener('resize', resize);
+  }
   resize();
   startMode(state, 'exhibition');
   if (runtime.requestedRenderer === '3d') {
