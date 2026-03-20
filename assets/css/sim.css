@@ -14,7 +14,7 @@
   --red: #ff4758;
   --yellow: #ffd84a;
   --shadow-lg: 0 20px 44px rgba(0, 0, 0, 0.45);
-  --drawer-h: min(320px, 34dvh);
+  --drawer-h: min(290px, 32dvh);
   --score-h: 56px;
 }
 
@@ -323,7 +323,11 @@ select {
   right: 0;
   bottom: 0;
   z-index: 30;
-  min-height: var(--drawer-h);
+  height: var(--drawer-h);
+  max-height: 42dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   border-top: 1px solid var(--border);
   background: rgba(4, 7, 12, 0.98);
   backdrop-filter: blur(20px);
@@ -332,6 +336,12 @@ select {
 
 .drawer-phase {
   padding: 12px 14px max(14px, env(safe-area-inset-bottom));
+}
+
+.drawer-setup,
+.drawer-travel {
+  min-height: 100%;
+  box-sizing: border-box;
 }
 
 .drawer-header,
@@ -516,8 +526,10 @@ select,
   left: 0;
   right: 0;
   bottom: 0;
-  max-height: min(68vh, 560px);
-  overflow: auto;
+  max-height: min(50dvh, 520px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding: 16px 14px max(16px, env(safe-area-inset-bottom));
   background: rgba(5, 8, 13, 0.98);
   border-top-left-radius: 22px;
@@ -590,6 +602,28 @@ select,
   border: 1px solid rgba(255,255,255,0.05);
 }
 
+.help-section {
+  margin-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 10px;
+}
+
+.help-section > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.help-section > summary::-webkit-details-marker {
+  display: none;
+}
+
+.help-section[open] {
+  max-height: 30dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;
+}
+
 @media (min-width: 768px) {
   :root {
     --drawer-h: min(300px, 30dvh);
@@ -615,6 +649,7 @@ select,
     left: 18px;
     right: 18px;
     bottom: 18px;
+    max-height: 38dvh;
     border: 1px solid var(--border);
     border-radius: 24px;
   }
@@ -630,12 +665,45 @@ select,
   }
 }
 
-/* ── Help Section ──────────────────────────────────────────────── */
-.help-section {
-  border-top: 1px solid var(--border);
-  margin-top: 16px;
-  padding-top: 16px;
+@media (max-width: 480px) {
+  :root {
+    --drawer-h: min(248px, 29dvh);
+  }
+
+  .mobile-shell {
+    padding-bottom: var(--drawer-h);
+  }
+
+  .shot-drawer {
+    max-height: 34dvh;
+  }
+
+  .drawer-phase {
+    padding: 10px 12px max(12px, env(safe-area-inset-bottom));
+  }
+
+  .shot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .drawer-call-row {
+    gap: 6px;
+  }
+
+  .call-chip {
+    padding: 8px 10px;
+  }
+
+  .sheet-panel {
+    max-height: min(44dvh, 420px);
+  }
+
+  .help-section[open] {
+    max-height: 22dvh;
+  }
 }
+
+/* ── Help Section ──────────────────────────────────────────────── */
 
 .help-heading {
   font-family: 'Syne', sans-serif;
