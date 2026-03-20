@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { buildSheet } from './models/sheet.js';
 import { buildStone } from './models/stone.js';
 import { buildArena } from './models/arena.js';
-import { PHYSICS, SHEET } from '../physics/constants.js';
+import { PHYSICS, SHEET } from '../physics/constants_v2.js';
 
 const CAMERA_POSES = {
   delivery: { position: [0, 5.6, -4.8], target: [0, 0.18, 18.5] },

@@ -44,3 +44,8 @@ Original prompt: complete all phases without asking again. execute all phases, c
   - mapped the curling app onto the t27 glitch palette
   - switched the shell to black / cyan / red styling
   - aligned the 2D fallback and 3D arena materials with the same palette
+- Physics promotion:
+  - cloned the calibrated physics stack into `*_v2.js` modules so the original engine stays intact
+  - repointed runtime imports in `src/main.js`, `src/game/*`, `src/render/*`, and test helpers to the v2 stack
+  - switched `src/physics/validation.test.js` to the calibrated v2 modules
+  - full `npx vitest run` and `npm run build` both pass on the promoted path

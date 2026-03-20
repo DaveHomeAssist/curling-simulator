@@ -1,7 +1,7 @@
-import { createStone } from '../physics/stone.js';
-import { simulateTrajectory } from '../physics/trajectory.js';
-import { calcScore } from '../physics/scoring.js';
-import { SHEET, PHYSICS } from '../physics/constants.js';
+import { createStone } from '../physics/stone_v2.js';
+import { simulateTrajectory } from '../physics/trajectory_v2.js';
+import { calcScore } from '../physics/scoring_v2.js';
+import { SHEET, PHYSICS } from '../physics/constants_v2.js';
 import { CHALLENGES } from './challenges.js';
 
 const DEFAULT_TEAMS = {

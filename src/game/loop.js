@@ -1,11 +1,11 @@
-import { stepPhysics } from '../physics/stone.js';
-import { resolveChain } from '../physics/collision.js';
+import { stepPhysics } from '../physics/stone_v2.js';
+import { resolveChain } from '../physics/collision_v2.js';
 import { getMovingStone, finalizeTravel, queueAiTurn, releaseShot, syncAiShot, updateCharge, updatePreview } from './state.js';
 import { findBestShot } from '../ai/shotSearch.js';
 import { evaluateShot } from '../ai/evaluator.js';
-import { createStone } from '../physics/stone.js';
-import { simulateTrajectory } from '../physics/trajectory.js';
-import { PHYSICS, SHEET } from '../physics/constants.js';
+import { createStone } from '../physics/stone_v2.js';
+import { simulateTrajectory } from '../physics/trajectory_v2.js';
+import { PHYSICS, SHEET } from '../physics/constants_v2.js';
 
 const FIXED_DT = 1 / 120;
 const RELEASE_Y = SHEET.HACK_Y + PHYSICS.STONE_RADIUS * 3.2;

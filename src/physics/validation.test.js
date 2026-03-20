@@ -11,9 +11,9 @@
  * See VALIDATION_RESEARCH.md for full citations and methodology.
  */
 import { describe, expect, it } from 'vitest';
-import { PHYSICS, SHEET } from './constants.js';
-import { createStone, stepPhysics } from './stone.js';
-import { resolveChain } from './collision.js';
+import { PHYSICS, SHEET } from './constants_v2.js';
+import { createStone, stepPhysics } from './stone_v2.js';
+import { resolveChain } from './collision_v2.js';
 
 const DT = 1 / 120;
 
