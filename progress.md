@@ -44,8 +44,3 @@ Original prompt: complete all phases without asking again. execute all phases, c
   - mapped the curling app onto the t27 glitch palette
   - switched the shell to black / cyan / red styling
   - aligned the 2D fallback and 3D arena materials with the same palette
-- Physics recalibration pass:
-  - lowered linear friction and curl acceleration to match the published Penner / Nyberg envelope
-  - added sweeping-specific curl reduction so swept shots now hold straighter instead of curving more
-  - added low-speed residual spin decay so the Penner benchmark stops inside the 40s validation window
-  - validation suite now passes, including the published benchmark checks in `src/physics/validation.test.js`

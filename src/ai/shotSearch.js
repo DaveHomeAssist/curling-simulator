@@ -1,3 +1,5 @@
+import { evaluateShot } from './evaluator.js';
+
 const SHEET_WIDTH = 4.75;
 const DIFFICULTY = {
   club: { samples: 20, aimNoise: 0.3, velocityNoise: 0.15 },
@@ -56,11 +58,8 @@ function normalizeDifficulty(difficulty) {
   return DIFFICULTY[difficulty] ?? DIFFICULTY.regional;
 }
 
-export function findBestShot(stones, team, difficulty, evaluateFn = globalThis.evaluateShot) {
+export function findBestShot(stones, team, difficulty, evaluateFn = evaluateShot) {
   const config = normalizeDifficulty(difficulty);
-  if (typeof evaluateFn !== 'function') {
-    throw new Error('findBestShot requires an evaluateShot function.');
-  }
   const random = createRandom(JSON.stringify({
     stones: cloneValue(stones),
     team,

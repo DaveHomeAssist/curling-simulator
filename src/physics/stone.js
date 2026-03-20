@@ -25,23 +25,19 @@ export function stepPhysics(stone, dt, sweeping = false) {
   const radius = stone.radius ?? PHYSICS.STONE_RADIUS;
   const speed = Math.hypot(stone.vx, stone.vy);
   const spin = stone.omega ?? 0;
-  const lowSpeed = speed <= PHYSICS.STOP_SPEED;
+
+  if (speed <= PHYSICS.STOP_SPEED && Math.abs(spin) <= PHYSICS.STOP_SPIN) {
+    stone.vx = 0;
+    stone.vy = 0;
+    stone.omega = 0;
+    stone.moving = false;
+    return stone;
+  }
 
   const friction = PHYSICS.LINEAR_FRICTION * (sweeping ? PHYSICS.SWEEP_FRICTION_MULTIPLIER : 1);
   const decel = friction * dt;
 
-  if (lowSpeed) {
-    stone.vx = 0;
-    stone.vy = 0;
-    const spinDecay = Math.pow(PHYSICS.RESIDUAL_SPIN_DECAY, dt / PHYSICS.TIME_STEP);
-    stone.omega = spin * spinDecay;
-    if (Math.abs(stone.omega) <= PHYSICS.STOP_SPIN) {
-      stone.omega = 0;
-      stone.moving = false;
-      stone.radius = radius;
-      return stone;
-    }
-  } else {
+  if (speed > 0) {
     const nx = stone.vx / speed;
     const ny = stone.vy / speed;
     const nextSpeed = Math.max(0, speed - decel);
@@ -49,8 +45,7 @@ export function stepPhysics(stone, dt, sweeping = false) {
     stone.vy = ny * nextSpeed;
 
     const curlSign = spin === 0 ? 0 : Math.sign(spin);
-    const curlMultiplier = sweeping ? PHYSICS.SWEEP_CURL_MULTIPLIER : 1;
-    const curl = PHYSICS.CURL_ACCEL * speed * dt * curlSign * curlMultiplier;
+    const curl = PHYSICS.CURL_ACCEL * speed * dt * curlSign;
     stone.vx += curl;
   }
 
@@ -58,17 +53,15 @@ export function stepPhysics(stone, dt, sweeping = false) {
   stone.y += stone.vy * dt;
 
   const nextSpeed = Math.hypot(stone.vx, stone.vy);
-  if (nextSpeed <= PHYSICS.STOP_SPEED && Math.abs(stone.omega) <= PHYSICS.STOP_SPIN) {
+  if (nextSpeed <= PHYSICS.STOP_SPEED && Math.abs(spin) <= PHYSICS.STOP_SPIN) {
     stone.vx = 0;
     stone.vy = 0;
     stone.omega = 0;
     stone.moving = false;
   } else {
     stone.moving = true;
-    if (!lowSpeed) {
-      const spinDrag = Math.max(0, 1 - (friction * 0.04 * dt));
-      stone.omega *= spinDrag;
-    }
+    const spinDrag = Math.max(0, 1 - (friction * 0.04 * dt));
+    stone.omega *= spinDrag;
   }
 
   stone.radius = radius;
