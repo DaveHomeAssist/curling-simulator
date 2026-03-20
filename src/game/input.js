@@ -35,6 +35,9 @@ export function bindInput(state, elements, services) {
 
   function onPointerDown(event) {
     if (!isHumanTurn(state)) return;
+    // Only trigger shot mechanics when clicking on the play surface itself
+    if (event.target !== surface && !surface.contains(event.target)) return;
+    if (event.target.closest('button, select, a, [role="button"]')) return;
     pointer.active = true;
     pointerToAim(event);
     beginCharge(state);
@@ -51,6 +54,7 @@ export function bindInput(state, elements, services) {
 
   function onPointerUp() {
     if (!isHumanTurn(state)) return;
+    if (!pointer.active) return;
     pointer.active = false;
     releaseShot(state, performance.now());
   }
