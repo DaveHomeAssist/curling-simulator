@@ -198,4 +198,12 @@ function mount() {
   };
 }
 
-mount();
+try {
+  mount();
+} catch (err) {
+  const app = document.getElementById('app');
+  if (app) {
+    app.innerHTML = `<pre style="color:#ff6666;padding:24px;font-family:monospace;white-space:pre-wrap;max-width:100vw;overflow-x:auto">${err.stack || err.message || err}</pre>`;
+  }
+  console.error('Mount failed:', err);
+}
