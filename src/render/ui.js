@@ -501,7 +501,7 @@ export function createUI(root) {
             : 'neutral';
         elements.resultChip.dataset.tone = resultTone;
         elements.resultTitle.textContent = state.resultChip.title;
-        elements.resultDetail.textContent = state.resultChip.detail;
+        elements.resultDetail.textContent = state.resultChip.detail + ' · TAP TO CONTINUE';
       } else {
         elements.resultChip.hidden = true;
         delete elements.resultChip.dataset.tone;

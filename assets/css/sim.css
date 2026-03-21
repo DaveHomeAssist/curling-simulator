@@ -974,3 +974,151 @@ select,
   color: var(--cyan);
   line-height: 1.4;
 }
+
+/* ═══ NAVIGATION & CONTROL POLISH ═══ */
+
+/* 1. Phase transition animation */
+.drawer-setup, .drawer-travel {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.drawer-setup[hidden], .drawer-travel[hidden] {
+  display: block !important;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+}
+
+/* 2. Shot grid — 5 items fit in 3+2 with Freeze spanning */
+.shot-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* 3. Charge button armed state — pulsing glow */
+@keyframes chargeGlow {
+  0%, 100% { box-shadow: 0 0 0 rgba(0, 231, 255, 0); }
+  50% { box-shadow: 0 0 18px rgba(0, 231, 255, 0.35); }
+}
+.drawer-button-primary:not(:disabled) {
+  animation: chargeGlow 1.8s ease-in-out infinite;
+}
+.drawer-button-primary:disabled {
+  animation: none;
+}
+
+/* 4. Sweep button press feedback */
+.sweep-button:active {
+  transform: scale(0.97);
+  transition: transform 60ms ease;
+}
+.sweep-button.is-active {
+  animation: chargeGlow 0.8s ease-in-out infinite;
+}
+
+/* 5. Power arc — stronger contrast */
+.power-arc-ring {
+  background:
+    radial-gradient(circle at center, rgba(7, 12, 18, 0.92) 0 42%, transparent 43%),
+    conic-gradient(from 180deg, rgba(0, 231, 255, 0.28) 0turn, rgba(0, 231, 255, 0.28) calc(var(--charge, 0) * 1turn), rgba(255,255,255,0.05) 0turn);
+}
+
+/* 6. Score strip press state */
+.score-strip:active {
+  background: rgba(5, 8, 13, 0.98);
+}
+.score-strip::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.12);
+}
+
+/* 7. Modal animation */
+.sheet-modal {
+  transition: opacity 200ms ease;
+  opacity: 1;
+}
+.sheet-modal[hidden] {
+  display: flex !important;
+  opacity: 0;
+  pointer-events: none;
+}
+.sheet-panel {
+  transition: transform 250ms cubic-bezier(0.32, 0.72, 0, 1);
+  transform: translateY(0);
+}
+.sheet-modal[hidden] .sheet-panel {
+  transform: translateY(100%);
+}
+
+/* 8. Drawer scroll fade hint */
+.shot-drawer::after {
+  content: '';
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(to top, rgba(4,7,12,0.98), transparent);
+  pointer-events: none;
+  display: block;
+}
+
+/* 9. Result chip gets a "Next End" action feel */
+.result-chip {
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+.result-chip:hover {
+  transform: translateX(-50%) scale(1.02);
+}
+
+/* 10. Focus visible states for keyboard navigation */
+.step-pill:focus-visible,
+.drawer-button:focus-visible,
+.drawer-chip-button:focus-visible,
+.sweep-button:focus-visible,
+.icon-button:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+select:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* Active step pill — stronger visual weight */
+.step-pill[data-active="true"] {
+  font-weight: 600;
+  border-color: transparent;
+  box-shadow: 0 0 12px rgba(0, 231, 255, 0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+/* Turn pill active state needs same treatment */
+.turn-button[data-active="true"] {
+  background: var(--cyan);
+  color: #071018;
+  box-shadow: 0 0 8px rgba(0, 231, 255, 0.4);
+  font-weight: 600;
+}
+
+/* Score values — make the active team's score brighter */
+.score-team.is-active .team-dot {
+  box-shadow: 0 0 8px currentColor;
+}
+
+/* Clutch stone indicator — stronger */
+.mobile-shell[data-clutch="true"] .score-strip {
+  border-bottom-color: rgba(255, 216, 74, 0.4);
+}
+
+/* Smooth broom marker */
+.broom-marker {
+  transition: left 80ms ease-out, opacity 100ms ease;
+}
