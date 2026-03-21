@@ -181,6 +181,79 @@ export function createRenderer3D(container) {
     impactPool.push(mesh);
   }
 
+  // Item 13: Visible spotlight cone (volumetric light cone mesh)
+  const coneMat = new THREE.MeshBasicMaterial({
+    color: 0xf8fbff, transparent: true, opacity: 0.025, depthWrite: false, side: THREE.DoubleSide,
+  });
+  const coneGeo = new THREE.ConeGeometry(3.5, 12, 32, 1, true);
+  const coneMesh = new THREE.Mesh(coneGeo, coneMat);
+  coneMesh.position.set(0, 10, SHEET.TEE_Y);
+  coneMesh.rotation.x = Math.PI;
+  scene.add(coneMesh);
+
+  // Item 15: Ice gloss reflection plane
+  const glossMat = new THREE.MeshBasicMaterial({
+    color: 0xffffff, transparent: true, opacity: 0.02, depthWrite: false,
+  });
+  const glossPlane = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 30), glossMat);
+  glossPlane.rotation.x = -Math.PI / 2;
+  glossPlane.rotation.z = 0.15;
+  glossPlane.position.set(0.8, 0.006, SHEET.TEE_Y);
+  root.add(glossPlane);
+
+  // Item 21: 3D Scoreboard emissive display
+  const sbCanvas = document.createElement('canvas');
+  sbCanvas.width = 512; sbCanvas.height = 256;
+  const sbTex = new THREE.CanvasTexture(sbCanvas);
+  sbTex.colorSpace = THREE.SRGBColorSpace;
+  const sbMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(4.4, 2.1),
+    new THREE.MeshBasicMaterial({ map: sbTex, transparent: true }),
+  );
+  sbMesh.position.set(0, 8.25, 2.5);
+  scene.add(sbMesh);
+
+  function updateScoreboard(state) {
+    const ctx2 = sbCanvas.getContext('2d');
+    ctx2.clearRect(0,0,512,256);
+    ctx2.fillStyle = 'rgba(7,8,12,0.85)';
+    ctx2.fillRect(0,0,512,256);
+    // Team colors + scores
+    ctx2.fillStyle = '#FF5555';
+    ctx2.beginPath(); ctx2.arc(130,90,24,0,Math.PI*2); ctx2.fill();
+    ctx2.fillStyle = '#D4A017';
+    ctx2.beginPath(); ctx2.arc(382,90,24,0,Math.PI*2); ctx2.fill();
+    ctx2.fillStyle = '#FFFFFF';
+    ctx2.font = 'bold 72px system-ui';
+    ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+    ctx2.fillText(String(state.scores?.red ?? 0), 200, 90);
+    ctx2.fillText('·', 256, 82);
+    ctx2.fillText(String(state.scores?.yel ?? 0), 312, 90);
+    // End
+    ctx2.fillStyle = '#5A6080';
+    ctx2.font = '32px system-ui';
+    ctx2.fillText('END ' + (state.end ?? 1), 256, 180);
+    sbTex.needsUpdate = true;
+  }
+
+  // Item 14: Vignette — applied as a screen-space overlay via a second scene
+  const vignetteScene = new THREE.Scene();
+  const vignetteCamera = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+  const vignetteCanvas = document.createElement('canvas');
+  vignetteCanvas.width = 512; vignetteCanvas.height = 512;
+  const vCtx = vignetteCanvas.getContext('2d');
+  const vGrad = vCtx.createRadialGradient(256,256,100,256,256,360);
+  vGrad.addColorStop(0, 'rgba(0,0,0,0)');
+  vGrad.addColorStop(1, 'rgba(0,0,0,0.35)');
+  vCtx.fillStyle = vGrad;
+  vCtx.fillRect(0,0,512,512);
+  const vignetteTex = new THREE.CanvasTexture(vignetteCanvas);
+  const vignetteMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(2,2),
+    new THREE.MeshBasicMaterial({ map: vignetteTex, transparent: true, depthTest: false }),
+  );
+  vignetteScene.add(vignetteMesh);
+
   let snapshot = null;
 
   function ensureStoneMesh(stone) {
@@ -222,6 +295,17 @@ export function createRenderer3D(container) {
     if (iceMat) {
       updateIceMaterial(iceMat, state.pebbleWear ?? 0, (performance.now() - startTime) * 0.001);
     }
+
+    // Item 4: Scratch marks intensify with wear
+    const scratchMesh = sheetGroup?.getObjectByProperty?.('userData', { scratchMesh: true });
+    if (!scratchMesh) {
+      sheetGroup?.traverse(child => {
+        if (child.userData?.scratchMesh) child.material.opacity = Math.min(0.3, (state.pebbleWear ?? 0) * 0.4);
+      });
+    }
+
+    // Item 21: Update scoreboard display
+    updateScoreboard(state);
 
     const liveIds = new Set();
     for (const stone of state.stones) {
@@ -339,6 +423,10 @@ export function createRenderer3D(container) {
     sync,
     render() {
       renderer.render(scene, camera);
+      // Item 14: Vignette overlay pass
+      renderer.autoClear = false;
+      renderer.render(vignetteScene, vignetteCamera);
+      renderer.autoClear = true;
     },
     setVisible(visible) {
       renderer.domElement.style.display = visible ? 'block' : 'none';
