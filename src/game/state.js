@@ -1,7 +1,7 @@
-import { createStone } from '../physics/stone_v2.js';
-import { simulateTrajectory } from '../physics/trajectory_v2.js';
-import { calcScore } from '../physics/scoring_v2.js';
-import { SHEET, PHYSICS } from '../physics/constants_v2.js';
+import { createStone } from '../physics/stone.js';
+import { simulateTrajectory } from '../physics/trajectory.js';
+import { calcScore } from '../physics/scoring.js';
+import { SHEET, PHYSICS } from '../physics/constants.js';
 import { CHALLENGES } from './challenges.js';
 
 const DEFAULT_TEAMS = {
@@ -480,7 +480,7 @@ export function updatePreview(state) {
   const baseVelocity = preset.velocity * (0.6 + state.powerCharge * 0.75);
   const proto = createStone(state.aimX * 0.24, baseVelocity, state.spin * RELEASE_SPIN, state.currentTeam, 'preview');
   proto.y = SHEET.HACK_Y + PHYSICS.STONE_RADIUS * 3.2;
-  const sim = simulateTrajectory(proto, state.stones, { sampleEvery: 4 });
+  const sim = simulateTrajectory(proto, state.stones);
   state.preview = sim.trajectory;
   state.dirtyPreview = false;
   return state.preview;
@@ -601,7 +601,7 @@ export function prepareNextEnd(state) {
   state.stonesRemainingByTeam = { red: 8, yel: 8 };
   state.stones = [];
   state.preview = [];
-  state.pebbleWear = 0.05; // residual wear after between-end re-pebble
+  state.pebbleWear = PHYSICS.PEBBLE_RESET_RESIDUAL;
   state.mode = 'aim';
   state.canThrow = true;
   state.challengeResult = null;

@@ -1,5 +1,5 @@
 import { buildStone } from './buildStone.js';
-import { SHEET } from '../physics/constants_v2.js';
+import { SHEET } from '../physics/constants.js';
 
 export function makeBlankEnd() {
   return [

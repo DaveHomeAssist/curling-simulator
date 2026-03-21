@@ -5,9 +5,9 @@ import { createRenderer2D } from './render/renderer2d.js';
 import { createRenderer3D } from './render/renderer3d.js';
 import { createUI } from './render/ui.js';
 import { createAudioManager } from './audio/manager.js';
-import { simulateTrajectory } from './physics/trajectory_v2.js';
-import { createStone } from './physics/stone_v2.js';
-import { PHYSICS, SHEET } from './physics/constants_v2.js';
+import { simulateTrajectory } from './physics/trajectory.js';
+import { createStone } from './physics/stone.js';
+import { PHYSICS, SHEET } from './physics/constants.js';
 
 function parseRuntimeOptions() {
   const params = new URLSearchParams(window.location.search);

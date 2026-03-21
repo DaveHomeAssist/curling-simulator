@@ -21,14 +21,20 @@ export const SHEET = deepFreeze({
 
 export const PHYSICS = deepFreeze({
   TIME_STEP: 1 / 60,
-  MAX_SIM_TIME: 24,
+  MAX_SIM_TIME: 35,
   STONE_RADIUS: 0.145,
   STONE_MASS: 19.96,
   RESTITUTION: 0.92,
-  LINEAR_FRICTION: 0.18,
-  SWEEP_FRICTION_MULTIPLIER: 0.72,
-  CURL_ACCEL: 0.08,
-  STOP_SPEED: 0.015,
-  STOP_SPIN: 0.02,
-  COLLISION_EPSILON: 1e-6,
+  MU_BASE: 0.009,
+  MU_VELOCITY_EXPONENT: 0.25,
+  CURL_K: 0.0035,
+  SWEEP_FRICTION_MULTIPLIER: 0.78,
+  SWEEP_CURL_MULTIPLIER: 0.45,
+  STOP_SPEED: 0.008,
+  STOP_SPIN: 0.01,
+  COLLISION_EPSILON: 0.01,
+  // Pebble wear: friction increases as ice is worn by stone traffic
+  PEBBLE_WEAR_RATE: 0.0003,    // wear per metre of stone travel
+  PEBBLE_WEAR_MU_SCALE: 0.25,  // max μ increase at full wear
+  PEBBLE_RESET_RESIDUAL: 0.05, // residual wear after between-end re-pebble
 });

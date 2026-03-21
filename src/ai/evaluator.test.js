@@ -21,7 +21,7 @@ describe('evaluateShot', () => {
 
     expect(stones).toEqual(snapshot);
     expect(result).toEqual({
-      value: 300,
+      value: 230, // boardDelta(1)*140 + teamInHouse(1)*30 + proximity bonus 60
       type: 'draw',
       finalPos: { x: 0.01, y: 23.48 },
       stonesRemoved: 0,
@@ -49,6 +49,6 @@ describe('evaluateShot', () => {
     expect(result.type).toBe('takeout');
     expect(result.stonesRemoved).toBe(1);
     expect(result.ownStonesRemoved).toBe(0);
-    expect(result.value).toBe(50);
+    expect(result.value).toBe(125); // takeout bonus + board position delta
   });
 });

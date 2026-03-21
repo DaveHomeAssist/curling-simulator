@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { buildSheet } from './models/sheet.js';
 import { buildStone } from './models/stone.js';
 import { buildArena } from './models/arena.js';
-import { PHYSICS, SHEET } from '../physics/constants_v2.js';
+import { PHYSICS, SHEET } from '../physics/constants.js';
 
 const CAMERA_POSES = {
   delivery: { position: [0, 5.6, -4.8], target: [0, 0.18, 18.5] },
@@ -163,7 +163,7 @@ export function createRenderer3D(container) {
       const removed = stone.removed || stone.inPlay === false;
       const pos = removed ? getDeadStoneSlot(state.stones, stone) : worldToScene(stone);
       mesh.position.set(pos.x, pos.y, pos.z);
-      mesh.rotation.y += (stone.omega ?? 0) * 0.04;
+      mesh.rotation.y = (mesh.rotation.y + (stone.omega ?? 0) * 0.04) % (Math.PI * 2);
       mesh.visible = true;
       mesh.scale.setScalar(removed ? 0.9 : 1);
     }

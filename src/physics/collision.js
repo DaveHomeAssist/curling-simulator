@@ -15,8 +15,9 @@ function resolvePair(a, b) {
   }
 
   const invDistance = distance > PHYSICS.COLLISION_EPSILON ? 1 / distance : 0;
+  // Default normal points away from hack (downsheet) to separate coincident stones
   const nx = distance > PHYSICS.COLLISION_EPSILON ? dx * invDistance : 0;
-  const ny = distance > PHYSICS.COLLISION_EPSILON ? dy * invDistance : 1;
+  const ny = distance > PHYSICS.COLLISION_EPSILON ? dy * invDistance : -1;
   const overlap = Math.max(0, minDistance - distance);
 
   if (overlap > 0) {
@@ -41,6 +42,7 @@ function resolvePair(a, b) {
   }
 
   const impulse = -((1 + PHYSICS.RESTITUTION) * relVel) / 2;
+  if (!Number.isFinite(impulse)) return null;
   a.vx -= impulse * nx;
   a.vy -= impulse * ny;
   b.vx += impulse * nx;

@@ -1,4 +1,4 @@
-import { PHYSICS, SHEET } from '../physics/constants_v2.js';
+import { PHYSICS, SHEET } from '../physics/constants.js';
 
 export function buildStone(overrides = {}) {
   return {
