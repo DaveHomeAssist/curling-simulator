@@ -252,25 +252,14 @@ function mount() {
   ui.render(state);
   loop.start();
 
-  window.render_game_to_text = () => buildTextState(state);
-  window.advanceTime = (ms = 16) => {
-    loop.step(ms);
-    return buildTextState(state);
-  };
-  window.forceRenderer = (renderer) => {
-    if (renderer === '2d') {
-      setRenderer(state, '2d');
-      ui.render(state);
-      return state.renderer;
-    }
-    if (renderer === '3d' && state.rendererReady) {
-      setRenderer(state, '3d');
-      ui.render(state);
-      return state.renderer;
-    }
-    return state.renderer;
-  };
   if (runtime.diagnostics) {
+    window.render_game_to_text = () => buildTextState(state);
+    window.advanceTime = (ms = 16) => { loop.step(ms); return buildTextState(state); };
+    window.forceRenderer = (renderer) => {
+      if (renderer === '2d') { setRenderer(state, '2d'); ui.render(state); return state.renderer; }
+      if (renderer === '3d' && state.rendererReady) { setRenderer(state, '3d'); ui.render(state); return state.renderer; }
+      return state.renderer;
+    };
     window.__curlingDiagnostics = {
       rendererReady: state.rendererReady,
       renderer: state.renderer,

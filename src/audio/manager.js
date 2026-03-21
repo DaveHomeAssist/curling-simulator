@@ -45,6 +45,7 @@ export function createAudioManager(state) {
       await prime();
     },
     async onCollision(events) {
+      if (!state.audio.enabled) return;
       await prime();
       if (!audioCtx || !masterGain || events.length === 0) return;
       const strongest = events.reduce((max, event) => Math.max(max, Math.abs(event.impulse ?? 0)), 0);
@@ -55,6 +56,7 @@ export function createAudioManager(state) {
       state.audio.lastImpact = strongest;
     },
     async onSkipCall(type = 'hard') {
+      if (!state.audio.enabled) return;
       await prime();
       if (!audioCtx || !masterGain) return;
       // Procedural blip: short sine tone — higher for 'whoa', lower for 'hard'.
@@ -70,6 +72,7 @@ export function createAudioManager(state) {
       osc.stop(audioCtx.currentTime + 0.18);
     },
     async onShotComplete(gameState) {
+      if (!state.audio.enabled) return;
       await prime();
       if (!audioCtx || !masterGain) return;
       const title = gameState.resultChip?.title ?? '';
