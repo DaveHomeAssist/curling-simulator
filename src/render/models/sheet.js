@@ -1,4 +1,5 @@
 import { COLORS, SHEET } from './constants.js';
+import { createIceMaterial } from './iceShader.js';
 
 function makeLineGeometry(THREERef, length, thickness = 0.025, depth = 0.002) {
   return new THREERef.BoxGeometry(length, depth, thickness);
@@ -79,18 +80,14 @@ export function buildSheet(THREERef = globalThis.THREE) {
   const group = new THREE.Group();
   group.name = 'curling-sheet';
 
+  const iceMaterial = createIceMaterial(THREE);
   const ice = new THREE.Mesh(
     new THREE.PlaneGeometry(SHEET.width, SHEET.length, 1, 1),
-    new THREE.MeshStandardMaterial({
-      color: COLORS.ice,
-      roughness: 0.25,
-      metalness: 0.08,
-      transparent: true,
-      opacity: 0.96,
-    }),
+    iceMaterial,
   );
   ice.rotation.x = -Math.PI / 2;
   ice.position.set(0, 0, SHEET.length / 2);
+  ice.userData.iceMaterial = iceMaterial;
   group.add(ice);
 
   const boardMaterial = new THREE.MeshStandardMaterial({

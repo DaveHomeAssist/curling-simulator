@@ -93,3 +93,18 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - Validation:
   - ESM import sanity passed for `src/game/state.js`, `src/game/input.js`, `src/game/loop.js`, and `src/render/ui.js` (`IMPORT_OK`)
   - bounded `npm run build` entered Vite production build and reached `transforming...`, but did not complete inside the 30s timeout in this environment
+2026-03-21
+- Upgrade pass focused on audio atmosphere + HUD cleanup:
+  - wired procedural crowd ambience into `src/audio/manager.js` instead of leaving it dormant in `generators.js`
+  - crowd bed now swells during travel/clutch situations and drops back in setup/result states
+  - moved shot-complete reaction timing to run after `finalizeTravel()` so cheer/groan logic can read the real result chip / medal state
+  - procedural crowd reactions now cover score / medal outcomes and obvious misses/removals
+  - kept the audio system fully procedural; `samples.js` remains a no-op fallback until real media files exist
+- UI polish:
+  - replaced the inline-styled challenge medal/tournament bracket markup with dedicated classes in `assets/css/sim.css`
+  - tightened challenge/tournament drawer presentation and added a compact retry button style
+  - updated help copy so it matches the shipped game: exhibition is 10 ends, and shortcut labels now reflect Guard / Draw / Freeze / Takeout / Peel
+- Validation:
+  - `npm run build` passes (`dist/assets/index-D75q_dhC.js`, `dist/assets/index-Cc436L5V.css`)
+  - targeted Vitest sweep passes: 10 files / 25 tests
+  - Playwright/browser validation remains blocked by the local Chrome sandbox/GPU crash; direct browser automation still dies before page capture

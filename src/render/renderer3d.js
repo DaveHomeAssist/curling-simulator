@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { buildSheet } from './models/sheet.js';
 import { buildStone } from './models/stone.js';
 import { buildArena } from './models/arena.js';
+import { updateIceMaterial } from './models/iceShader.js';
 import { PHYSICS, SHEET } from '../physics/constants.js';
 
 const CAMERA_POSES = {
@@ -66,7 +67,10 @@ export function createRenderer3D(container) {
   const root = new THREE.Group();
   scene.add(root);
   try { root.add(buildArena(THREE)); } catch (e) { throw new Error('buildArena failed: ' + e.message); }
-  try { root.add(buildSheet(THREE)); } catch (e) { throw new Error('buildSheet failed: ' + e.message); }
+  let sheetGroup;
+  try { sheetGroup = buildSheet(THREE); root.add(sheetGroup); } catch (e) { throw new Error('buildSheet failed: ' + e.message); }
+  const iceMat = sheetGroup?.children?.find(c => c.userData?.iceMaterial)?.userData.iceMaterial ?? null;
+  const startTime = performance.now();
 
   const iceGlow = new THREE.Mesh(
     new THREE.CircleGeometry(7.5, 64),
@@ -213,6 +217,11 @@ export function createRenderer3D(container) {
   function sync(state, movingStone) {
     snapshot = state;
     setCamera(state, movingStone);
+
+    // Update ice shader with pebble wear and elapsed time
+    if (iceMat) {
+      updateIceMaterial(iceMat, state.pebbleWear ?? 0, (performance.now() - startTime) * 0.001);
+    }
 
     const liveIds = new Set();
     for (const stone of state.stones) {
