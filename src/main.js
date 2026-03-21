@@ -133,7 +133,7 @@ function mount() {
     state.renderer = '2d';
     state.rendererReady = false;
     state.rendererMessage = 'WebGL unavailable in this browser session. Running in fallback mode.';
-    console.warn('WebGL not available — using fallback renderer');
+    if (runtime.diagnostics) console.warn('WebGL not available — using fallback renderer');
   }
 
   const renderer2d = createRenderer2D(ui.elements.surface2d);
@@ -146,7 +146,7 @@ function mount() {
       state.rendererMessage = '3D arena renderer active.';
     }
   } catch (err) {
-    console.error('3D renderer failed to initialize:', err);
+    if (runtime.diagnostics) console.error('3D renderer failed to initialize:', err);
     state.renderer = '2d';
     state.rendererReady = false;
     state.rendererMessage = '3D init error: ' + (err.message || String(err));

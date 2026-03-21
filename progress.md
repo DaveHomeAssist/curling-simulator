@@ -108,3 +108,11 @@ Original prompt: complete all phases without asking again. execute all phases, c
   - `npm run build` passes (`dist/assets/index-D75q_dhC.js`, `dist/assets/index-Cc436L5V.css`)
   - targeted Vitest sweep passes: 10 files / 25 tests
   - Playwright/browser validation remains blocked by the local Chrome sandbox/GPU crash; direct browser automation still dies before page capture
+- Final polish sweep:
+  - score strip now highlights the active team and the hammer holder
+  - setup drawer now visually flips into a ready state once shot type + turn are committed
+  - result chip now gets outcome-based styling (positive vs warning) instead of staying visually flat
+  - settings detail now includes current crowd mood for quicker audio-state debugging without reopening internals
+- Validation:
+  - `npm run build` passes again after the final UI polish
+  - targeted Vitest sweep still passes: 10 files / 25 tests

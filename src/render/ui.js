@@ -35,12 +35,12 @@ export function createUI(root) {
   root.innerHTML = `
     <div class="mobile-shell" data-phase="setup">
       <header class="score-strip" id="score-strip" role="button" tabindex="0" aria-label="Open end-by-end scoring">
-        <div class="score-team score-team-red"><span class="team-dot"></span><span>RED</span></div>
+        <div class="score-team score-team-red" id="team-red"><span class="team-dot"></span><span>RED</span></div>
         <div class="score-core">
           <div class="score-values"><span id="score-red">0</span><span class="score-sep">·</span><span id="score-yel">0</span></div>
           <div class="score-meta"><span id="score-end">END 1 / 10</span><span id="score-hammer">🔨 YELLOW</span></div>
         </div>
-        <div class="score-team score-team-yel"><span>YELLOW</span><span class="team-dot"></span></div>
+        <div class="score-team score-team-yel" id="team-yel"><span>YELLOW</span><span class="team-dot"></span></div>
         ${button('⚙', 'icon-button score-settings', { id: 'settings-toggle', type: 'button', 'aria-label': 'Open settings' })}
       </header>
 
@@ -283,6 +283,8 @@ export function createUI(root) {
     surface3d: root.querySelector('#surface-3d'),
     overlay: root.querySelector('#input-overlay'),
     scoreStrip: root.querySelector('#score-strip'),
+    teamRed: root.querySelector('#team-red'),
+    teamYel: root.querySelector('#team-yel'),
     settingsToggle: root.querySelector('#settings-toggle'),
     scoreRed: root.querySelector('#score-red'),
     scoreYel: root.querySelector('#score-yel'),
@@ -360,6 +362,7 @@ export function createUI(root) {
 
       elements.shell.dataset.phase = travelPhase ? 'travel' : 'setup';
       elements.shell.dataset.clutch = clutchStone ? 'true' : 'false';
+      elements.drawerSetup.dataset.ready = String(chargeReady);
       elements.modeSelect.value = state.gameMode;
       elements.challengeSelect.value = state.selectedChallengeId ?? CHALLENGES[0]?.id ?? '';
       elements.cameraSelect.value = state.preferredCameraMode;
@@ -370,6 +373,10 @@ export function createUI(root) {
       elements.scoreYel.textContent = String(state.totalScore.yel);
       elements.scoreEnd.textContent = `END ${state.end} / ${state.maxEnds}`;
       elements.scoreHammer.textContent = `🔨 ${state.teams[state.hammerTeam].name.toUpperCase()}`;
+      elements.teamRed.classList.toggle('is-active', state.currentTeam === 'red');
+      elements.teamYel.classList.toggle('is-active', state.currentTeam === 'yel');
+      elements.teamRed.classList.toggle('has-hammer', state.hammerTeam === 'red');
+      elements.teamYel.classList.toggle('has-hammer', state.hammerTeam === 'yel');
 
       elements.drawerStone.textContent = `STONE ${state.shotNumber + 1} / 16`;
       elements.drawerCaption.textContent = travelPhase
@@ -478,7 +485,7 @@ export function createUI(root) {
         elements.challengeMeta.innerHTML = '';
       }
 
-      elements.settingsDetail.textContent = `${state.rendererReady ? `Renderer ${state.renderer.toUpperCase()}` : state.rendererMessage} · Audio ${state.audio.enabled ? 'on' : 'off'}`;
+      elements.settingsDetail.textContent = `${state.rendererReady ? `Renderer ${state.renderer.toUpperCase()}` : state.rendererMessage} · Audio ${state.audio.enabled ? 'on' : 'off'} · Crowd ${state.audio.crowdMood}`;
       elements.audioToggle.textContent = state.audio.enabled ? 'Audio On' : 'Audio Off';
       elements.rendererToggle.textContent = state.renderer === '3d' ? 'Use 2D' : 'Use 3D';
 
@@ -487,10 +494,17 @@ export function createUI(root) {
 
       if (activeResult) {
         elements.resultChip.hidden = false;
+        const resultTone = /SCORES|GOLD|SILVER|SHOT/i.test(state.resultChip.title)
+          ? 'good'
+          : /BLANK|MISS|Removed/i.test(state.resultChip.title)
+            ? 'warn'
+            : 'neutral';
+        elements.resultChip.dataset.tone = resultTone;
         elements.resultTitle.textContent = state.resultChip.title;
         elements.resultDetail.textContent = state.resultChip.detail;
       } else {
         elements.resultChip.hidden = true;
+        delete elements.resultChip.dataset.tone;
       }
     },
   };
