@@ -57,18 +57,18 @@ const fragmentShader = /* glsl */ `
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
   }
 
-  // Pebble pattern — clustered bumps
+  // Pebble pattern — subtle clustered bumps
   float pebblePattern(vec2 uv, float wear) {
-    float scale = 180.0;
+    float scale = 80.0;
     float n1 = noise(uv * scale);
     float n2 = noise(uv * scale * 2.3 + 42.0);
     float n3 = noise(uv * scale * 0.7 - 17.0);
 
-    // Pebble bumps: sharp peaks that flatten with wear
-    float pebble = smoothstep(0.45 - wear * 0.15, 0.65, n1 * 0.5 + n2 * 0.3 + n3 * 0.2);
+    // Pebble bumps: gentle peaks that flatten with wear
+    float pebble = smoothstep(0.5 - wear * 0.1, 0.72, n1 * 0.5 + n2 * 0.3 + n3 * 0.2);
 
     // Wear smooths the pebble tops
-    return pebble * (1.0 - wear * 0.6);
+    return pebble * (0.6 - wear * 0.4);
   }
 
   // Fresnel reflectance (Schlick approximation)
@@ -87,7 +87,7 @@ const fragmentShader = /* glsl */ `
     // Perturb normal with pebble bumps
     float dx = pebblePattern(worldUV + vec2(0.001, 0.0), uPebbleWear) - pebble;
     float dy = pebblePattern(worldUV + vec2(0.0, 0.001), uPebbleWear) - pebble;
-    vec3 bumpNormal = normalize(vWorldNormal + vec3(dx, 0.0, dy) * 4.0 * (1.0 - uPebbleWear * 0.5));
+    vec3 bumpNormal = normalize(vWorldNormal + vec3(dx, 0.0, dy) * 2.0 * (1.0 - uPebbleWear * 0.5));
 
     // Base ice color with depth variation
     float depth = noise(worldUV * 3.0) * 0.15;
@@ -112,8 +112,8 @@ const fragmentShader = /* glsl */ `
     float sss = max(0.0, dot(-vViewDir, uLightDir)) * 0.12;
     lit += vec3(0.6, 0.85, 1.0) * sss;
 
-    // Pebble highlight — bright spots on pebble tops
-    float pebbleHighlight = smoothstep(0.6, 0.9, pebble) * 0.15 * (1.0 - uPebbleWear * 0.5);
+    // Pebble highlight — subtle bright spots on pebble tops
+    float pebbleHighlight = smoothstep(0.6, 0.9, pebble) * 0.06 * (1.0 - uPebbleWear * 0.5);
     lit += vec3(1.0) * pebbleHighlight;
 
     // Very subtle sparkle from pebble facets
