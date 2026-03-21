@@ -102,8 +102,8 @@ export function createLoop(state, services) {
           deliveredStone.inPlay = false;
           state.stats.hogViolations += 1;
         }
-        services.audio?.onShotComplete(state);
         finalizeTravel(state, now);
+        services.audio?.onShotComplete(state);
       }
     } else if (state.ai.enabled && state.currentTeam === 'yel') {
       queueAiTurn(state, now);

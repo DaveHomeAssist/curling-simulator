@@ -116,6 +116,7 @@ export function createUI(root) {
           </div>
 
           <div class="drawer-detail" id="challenge-detail"></div>
+          <div id="challenge-meta"></div>
         </div>
 
         <div class="drawer-phase drawer-travel" id="drawer-travel" hidden>
@@ -240,7 +241,7 @@ export function createUI(root) {
             <div class="help-block">
               <div class="help-subhead">Game Modes</div>
               <dl class="help-dl">
-                <dt>Exhibition</dt><dd>Full 8-end match against the AI. Standard rules.</dd>
+                <dt>Exhibition</dt><dd>Full 10-end match against the AI. Standard rules.</dd>
                 <dt>Practice</dt><dd>Unlimited stones, no turns, no scoring. Experiment freely.</dd>
                 <dt>Shot Challenge</dt><dd>Single-shot drills — draws, takeouts, guards, freezes, peels. Earn gold, silver, or bronze medals.</dd>
                 <dt>Tournament</dt><dd>6-end bracket games against AI teams. Win to advance.</dd>
@@ -252,7 +253,7 @@ export function createUI(root) {
               <div class="help-subhead">Keyboard Shortcuts</div>
               <table class="help-keys">
                 <tr><td><kbd>←</kbd> <kbd>→</kbd> / <kbd>A</kbd> <kbd>D</kbd></td><td>Adjust broom aim</td></tr>
-                <tr><td><kbd>1</kbd>–<kbd>5</kbd></td><td>Shot type (Guard, Draw, Control, Takeout, Peel)</td></tr>
+                <tr><td><kbd>1</kbd>–<kbd>5</kbd></td><td>Shot type (Guard, Draw, Freeze, Takeout, Peel)</td></tr>
                 <tr><td><kbd>Q</kbd> / <kbd>E</kbd></td><td>In-turn / Out-turn</td></tr>
                 <tr><td><kbd>Space</kbd></td><td>Arm charge · hold to charge · release to throw · sweep while moving</td></tr>
                 <tr><td><kbd>F</kbd></td><td>Toggle fullscreen</td></tr>
@@ -316,6 +317,7 @@ export function createUI(root) {
     callHandle: root.querySelector('#call-handle'),
     callWeight: root.querySelector('#call-weight'),
     challengeDetail: root.querySelector('#challenge-detail'),
+    challengeMeta: root.querySelector('#challenge-meta'),
     historyModal: root.querySelector('#history-modal'),
     settingsModal: root.querySelector('#settings-modal'),
     scoreboardTable: root.querySelector('#scoreboard-table'),
@@ -428,6 +430,53 @@ export function createUI(root) {
       elements.challengeDetail.textContent = state.gameMode === 'challenge' && activeChallenge
         ? `${activeChallenge.description}${state.challengeSummary ? ` · ${state.challengeMedal ?? 'pending'} · ${state.challengeSummary}` : ''}`
         : `${state.teams[state.currentTeam].name.toUpperCase()} TO PLAY · ${state.rendererReady ? '3D arena live' : state.rendererMessage}`;
+
+      // --- Challenge medal display ---
+      if (state.gameMode === 'challenge' && state.challengeResult != null) {
+        const medalMap = {
+          gold: 'gold',
+          silver: 'silver',
+          bronze: 'bronze',
+        };
+        const tier = state.challengeResult.medal;
+        const medalClass = medalMap[tier] ?? 'miss';
+        const distText = state.challengeResult.distance != null
+          ? `${state.challengeResult.distance.toFixed(2)}m from target`
+          : '';
+        elements.challengeMeta.innerHTML = `
+          <div class="drawer-meta-card">
+            <div class="drawer-meta-row">
+              <span class="drawer-badge drawer-badge-${medalClass}">${(tier ?? 'miss').toUpperCase()}</span>
+              ${distText ? `<span class="drawer-meta-copy">${distText}</span>` : ''}
+            </div>
+            <button class="drawer-chip-button drawer-chip-compact" id="challenge-try-again" type="button">Try Again</button>
+          </div>
+        `;
+        const tryAgainBtn = elements.challengeMeta.querySelector('#challenge-try-again');
+        if (tryAgainBtn && typeof state.seedChallenge === 'function') {
+          tryAgainBtn.addEventListener('click', state.seedChallenge);
+        }
+      } else if (state.gameMode === 'tournament' && state.tournament) {
+        // --- Tournament bracket display ---
+        const { teams = [], currentMatchIndex = 0, round = 1 } = state.tournament;
+        const teamRows = teams.map((team, i) => {
+          const isCurrent = i === currentMatchIndex || (i === currentMatchIndex + 1);
+          return `
+            <div class="tournament-row${isCurrent ? ' is-current' : ''}">
+              <span class="tournament-team">${team.name ?? `Team ${i + 1}`}</span>
+              <span class="drawer-badge drawer-badge-neutral">${team.wins ?? 0}W</span>
+            </div>
+          `;
+        }).join('');
+        elements.challengeMeta.innerHTML = `
+          <div class="drawer-meta-card tournament-card">
+            <div class="drawer-kicker tournament-kicker">ROUND ${round} · TOURNAMENT</div>
+            ${teamRows}
+          </div>
+        `;
+      } else {
+        elements.challengeMeta.innerHTML = '';
+      }
 
       elements.settingsDetail.textContent = `${state.rendererReady ? `Renderer ${state.renderer.toUpperCase()}` : state.rendererMessage} · Audio ${state.audio.enabled ? 'on' : 'off'}`;
       elements.audioToggle.textContent = state.audio.enabled ? 'Audio On' : 'Audio Off';

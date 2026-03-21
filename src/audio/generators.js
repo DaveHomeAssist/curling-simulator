@@ -73,6 +73,69 @@ export function createScrape(audioCtx, velocity) {
   return makePlayable(gain, source);
 }
 
+export function createCrowdAmbient(audioCtx) {
+  const source = audioCtx.createBufferSource();
+  const filter = audioCtx.createBiquadFilter();
+  const gain = audioCtx.createGain();
+  // 4-second looping brown noise shaped into the 200-800 Hz crowd-murmur band.
+  source.buffer = buildNoiseBuffer(audioCtx, 4, 'brown');
+  source.loop = true;
+  filter.type = 'bandpass';
+  filter.frequency.value = 400;
+  filter.Q.value = 0.5;
+  setValue(gain.gain, 0.035);
+  source.connect(filter);
+  filter.connect(gain);
+  let started = false;
+  return {
+    node: gain,
+    start(time = 0) {
+      if (started) return;
+      started = true;
+      source.start(time);
+    },
+    stop(time = 0) {
+      try { source.stop(time); } catch (_) { /* already stopped */ }
+    },
+    setLevel(level, time = audioCtx.currentTime) {
+      const target = clamp(level, 0, 0.14);
+      gain.gain.cancelScheduledValues?.(time);
+      gain.gain.setValueAtTime(Math.max(0.0001, gain.gain.value || 0.0001), time);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, target), time + 0.18);
+    },
+  };
+}
+
+export function createCrowdReaction(audioCtx, positive = true) {
+  const source = audioCtx.createBufferSource();
+  const filter = audioCtx.createBiquadFilter();
+  const gain = audioCtx.createGain();
+  // Burst of filtered noise: higher pitch for cheer, lower for groan.
+  source.buffer = buildNoiseBuffer(audioCtx, 1.5, 'brown');
+  filter.type = 'bandpass';
+  filter.frequency.value = positive ? 700 : 280;
+  filter.Q.value = 0.6;
+  source.connect(filter);
+  filter.connect(gain);
+  let started = false;
+  return {
+    node: gain,
+    start(time = 0) {
+      if (started) return;
+      started = true;
+      const startAt = audioCtx.currentTime + time;
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.linearRampToValueAtTime(0.18, startAt + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, startAt + 1.5);
+      source.start(startAt);
+      source.stop(startAt + 1.5);
+    },
+    stop(time = 0) {
+      try { source.stop(audioCtx.currentTime + time); } catch (_) { /* already stopped */ }
+    },
+  };
+}
+
 export function createImpact(audioCtx, impulse) {
   const source = audioCtx.createBufferSource();
   const filter = audioCtx.createBiquadFilter();

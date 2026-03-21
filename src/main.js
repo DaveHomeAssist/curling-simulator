@@ -169,7 +169,7 @@ function mount() {
       renderer3d.setVisible(use3d);
       renderer2d.sync(currentState);
       if (use3d) renderer3d.sync(currentState, movingStone);
-      audio.updateMotion(movingStone, currentState.sweeping);
+      audio.updateMotion(currentState, movingStone, currentState.sweeping);
       multiplayer.sync();
     },
     render() {

@@ -1,54 +1,9 @@
-const SAMPLE_FILES = [
-  'crowd-ambient.mp3',
-  'crowd-cheer.mp3',
-  'crowd-groan.mp3',
-  'skip-hard.mp3',
-  'skip-whoa.mp3',
-];
-
-function sampleKey(fileName) {
-  return fileName.replace(/\.[^.]+$/, '');
-}
-
-async function decodeAudioData(audioCtx, arrayBuffer) {
-  if (typeof audioCtx.decodeAudioData !== 'function') {
-    return arrayBuffer;
-  }
-  if (audioCtx.decodeAudioData.length >= 2) {
-    return new Promise((resolve, reject) => {
-      audioCtx.decodeAudioData(arrayBuffer, resolve, reject);
-    });
-  }
-  return audioCtx.decodeAudioData(arrayBuffer);
-}
-
-function normalizeBasePath(basePath) {
-  if (!basePath) {
-    return '';
-  }
-  return basePath.endsWith('/') ? basePath : `${basePath}/`;
-}
-
-export async function loadSamples(audioCtx, basePath = '') {
-  const loaded = new Map();
-  const prefix = normalizeBasePath(basePath);
-
-  for (const fileName of SAMPLE_FILES) {
-    try {
-      const response = await fetch(`${prefix}${fileName}`);
-      if (!response?.ok) {
-        console.warn(`Failed to load audio sample: ${fileName}`);
-        continue;
-      }
-      const arrayBuffer = await response.arrayBuffer();
-      const decoded = await decodeAudioData(audioCtx, arrayBuffer);
-      loaded.set(sampleKey(fileName), decoded);
-    } catch (error) {
-      console.warn(`Failed to load audio sample: ${fileName}`, error);
-    }
-  }
-
-  return loaded;
+// Sample files are an optional enhancement. When real .mp3 assets are present,
+// they can be loaded here to replace the procedural fallbacks in manager.js.
+// For now, loadSamples returns an empty Map so the audio system works without
+// any external files — all sounds are generated procedurally by generators.js.
+export async function loadSamples(_audioCtx, _basePath = '') {
+  return new Map();
 }
 
 export function playSample(audioCtx, buffer, volume = 1) {

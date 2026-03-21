@@ -476,6 +476,110 @@ select,
   min-height: 18px;
 }
 
+#challenge-meta {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.drawer-meta-card {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(16, 24, 36, 0.94), rgba(8, 12, 18, 0.96));
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.drawer-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.drawer-meta-copy {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.drawer-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.drawer-badge-gold {
+  background: #b8860b;
+  color: #fff8e1;
+}
+
+.drawer-badge-silver {
+  background: #757575;
+  color: #f5f5f5;
+}
+
+.drawer-badge-bronze {
+  background: #7d4e1f;
+  color: #fdf0e0;
+}
+
+.drawer-badge-miss {
+  background: #c62828;
+  color: #fff;
+}
+
+.drawer-badge-neutral {
+  background: rgba(255,255,255,0.12);
+  color: var(--text);
+}
+
+.drawer-chip-compact {
+  width: auto;
+  justify-self: start;
+  min-height: 38px;
+  padding-inline: 14px;
+}
+
+.tournament-card {
+  gap: 6px;
+}
+
+.tournament-kicker {
+  margin-bottom: 2px;
+}
+
+.tournament-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  margin: 0;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid transparent;
+  opacity: 0.72;
+}
+
+.tournament-row.is-current {
+  border-color: rgba(0, 231, 255, 0.4);
+  box-shadow: inset 3px 0 0 rgba(0, 231, 255, 0.8);
+  opacity: 1;
+}
+
+.tournament-team {
+  font-family: 'Syne', system-ui, sans-serif;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
 .travel-summary {
   justify-content: center;
   font-size: 0.78rem;

@@ -28,42 +28,12 @@ function createAudioContext() {
 }
 
 describe('loadSamples', () => {
-  it('loads and decodes all configured samples with a normalized base path', async () => {
+  it('returns an empty map immediately (procedural-only mode)', async () => {
     const audioCtx = createAudioContext();
-    const requested = [];
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async (url) => {
-        requested.push(url);
-        return {
-          ok: true,
-          arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer,
-        };
-      }),
-    );
-
     const samples = await loadSamples(audioCtx, '/assets/audio');
 
-    expect(requested[0]).toBe('/assets/audio/crowd-ambient.mp3');
-    expect(requested).toHaveLength(5);
-    expect(samples.get('crowd-ambient')).toEqual({ decoded: 3 });
-    expect(samples.get('skip-whoa')).toEqual({ decoded: 3 });
-  });
-
-  it('returns an empty map when all fetches fail', async () => {
-    const audioCtx = createAudioContext();
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => {
-        throw new Error('network down');
-      }),
-    );
-
-    const samples = await loadSamples(audioCtx, '/base');
-
+    expect(samples).toBeInstanceOf(Map);
     expect(samples.size).toBe(0);
-    expect(warn).toHaveBeenCalled();
   });
 });
 

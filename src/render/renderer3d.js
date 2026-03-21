@@ -119,6 +119,64 @@ export function createRenderer3D(container) {
   aimGroup.add(aimLine);
   scene.add(aimGroup);
 
+  // --- Sweep particles ---
+  const SWEEP_COUNT = 20;
+  const sweepPositions = new Float32Array(SWEEP_COUNT * 3);
+  const sweepGeometry = new THREE.BufferGeometry();
+  sweepGeometry.setAttribute('position', new THREE.BufferAttribute(sweepPositions, 3));
+  const sweepMaterial = new THREE.PointsMaterial({
+    color: 0xaaffff,
+    size: 0.045,
+    transparent: true,
+    opacity: 0.85,
+    depthWrite: false,
+    sizeAttenuation: true,
+  });
+  const sweepPoints = new THREE.Points(sweepGeometry, sweepMaterial);
+  sweepPoints.visible = false;
+  scene.add(sweepPoints);
+
+  // --- Wake trail ---
+  const WAKE_MAX = 120;
+  const wakePositions = new Float32Array(WAKE_MAX * 3);
+  const wakeColors = new Float32Array(WAKE_MAX * 3);
+  const wakeGeometry = new THREE.BufferGeometry();
+  wakeGeometry.setAttribute('position', new THREE.BufferAttribute(wakePositions, 3));
+  wakeGeometry.setAttribute('color', new THREE.BufferAttribute(wakeColors, 3));
+  const wakeMaterial = new THREE.LineBasicMaterial({
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.72,
+    depthWrite: false,
+    linewidth: 1,
+  });
+  const wakeLine = new THREE.Line(wakeGeometry, wakeMaterial);
+  wakeLine.visible = false;
+  scene.add(wakeLine);
+
+  // --- Impact flash pool ---
+  const IMPACT_POOL = 4;
+  const IMPACT_DURATION = 300;
+  const impactPool = [];
+  for (let i = 0; i < IMPACT_POOL; i += 1) {
+    const mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.18, 8, 6),
+      new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0xffffff,
+        emissiveIntensity: 3.0,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+      }),
+    );
+    mesh.visible = false;
+    mesh.userData.activeUntil = 0;
+    mesh.userData.startAt = 0;
+    scene.add(mesh);
+    impactPool.push(mesh);
+  }
+
   let snapshot = null;
 
   function ensureStoneMesh(stone) {
@@ -182,6 +240,88 @@ export function createRenderer3D(container) {
       aimGroup.visible = true;
     } else {
       aimGroup.visible = false;
+    }
+
+    const now = performance.now();
+
+    // --- Sweep particles ---
+    if (state.sweeping && state.mode === 'travel') {
+      const cx = state.aimX;
+      const cz = state.effects.sweepTrail.length > 0
+        ? state.effects.sweepTrail[state.effects.sweepTrail.length - 1].y
+        : 21.97;
+      const pos = sweepGeometry.attributes.position;
+      for (let i = 0; i < SWEEP_COUNT; i += 1) {
+        const angle = Math.random() * Math.PI * 2;
+        const r = Math.random() * 0.22;
+        pos.setXYZ(i, cx + Math.cos(angle) * r, 0.02 + Math.random() * 0.06, cz + Math.sin(angle) * r);
+      }
+      pos.needsUpdate = true;
+      sweepPoints.visible = true;
+    } else {
+      sweepPoints.visible = false;
+    }
+
+    // --- Wake trail ---
+    const trail = state.effects.wakeTrail;
+    if (trail.length >= 2) {
+      const count = Math.min(trail.length, WAKE_MAX);
+      const wakePos = wakeGeometry.attributes.position;
+      const wakeCol = wakeGeometry.attributes.color;
+      const WAKE_TTL = 10000;
+      for (let i = 0; i < count; i += 1) {
+        const pt = trail[trail.length - count + i];
+        const age = now - pt.createdAt;
+        const t = Math.max(0, 1 - age / WAKE_TTL);
+        wakePos.setXYZ(i, pt.x, 0.012, pt.y);
+        wakeCol.setXYZ(i, t * 0.4, t * 0.85, t * 0.9);
+      }
+      wakePos.needsUpdate = true;
+      wakeCol.needsUpdate = true;
+      wakeGeometry.setDrawRange(0, count);
+      wakeLine.visible = true;
+    } else {
+      wakeLine.visible = false;
+    }
+
+    // --- Impact flashes ---
+    // Activate pool slots for new impacts (< IMPACT_DURATION ms old and impulse > 0)
+    for (const impact of state.effects.impacts) {
+      if (impact.impulse <= 0) continue;
+      const age = now - impact.createdAt;
+      if (age > IMPACT_DURATION) continue;
+      // Check if already being rendered by a pool slot
+      const alreadyActive = impactPool.some((mesh) => mesh.userData.impactId === impact.createdAt + impact.pair[0]);
+      if (alreadyActive) continue;
+      // Find the two stones to place flash at their midpoint
+      const stoneA = state.stones.find((s) => s.id === impact.pair[0]);
+      const stoneB = state.stones.find((s) => s.id === impact.pair[1]);
+      if (!stoneA && !stoneB) continue;
+      const fx = stoneA && stoneB ? (stoneA.x + stoneB.x) / 2 : (stoneA ?? stoneB).x;
+      const fz = stoneA && stoneB ? (stoneA.y + stoneB.y) / 2 : (stoneA ?? stoneB).y;
+      // Grab an idle or oldest pool slot
+      const slot = impactPool.find((mesh) => !mesh.visible) ?? impactPool.reduce((oldest, mesh) => mesh.userData.startAt < oldest.userData.startAt ? mesh : oldest);
+      slot.position.set(fx, 0.145, fz);
+      slot.userData.impactId = impact.createdAt + impact.pair[0];
+      slot.userData.startAt = now - age;
+      slot.userData.activeUntil = slot.userData.startAt + IMPACT_DURATION;
+      slot.visible = true;
+    }
+    // Animate active pool slots
+    for (const mesh of impactPool) {
+      if (!mesh.visible) continue;
+      const elapsed = now - mesh.userData.startAt;
+      const total = IMPACT_DURATION;
+      if (elapsed >= total) {
+        mesh.visible = false;
+        mesh.userData.impactId = null;
+        continue;
+      }
+      const t = elapsed / total;
+      const scale = 1.0 - t * 0.85;
+      mesh.scale.setScalar(scale);
+      mesh.material.opacity = (1 - t) * 0.9;
+      mesh.material.emissiveIntensity = (1 - t) * 3.0;
     }
   }
 
