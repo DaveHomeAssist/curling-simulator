@@ -38,37 +38,54 @@ const fragmentShader = /* glsl */ `
   varying vec2 vUv;
   varying vec3 vViewDir;
 
-  // Simple hash for procedural noise
+  // Hash functions
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
   }
+  vec2 hash2(vec2 p) {
+    return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453);
+  }
 
-  // Value noise
+  // Value noise (used for depth variation, not pebble)
   float noise(vec2 p) {
     vec2 i = floor(p);
     vec2 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f); // smoothstep
-
+    f = f * f * (3.0 - 2.0 * f);
     float a = hash(i);
     float b = hash(i + vec2(1.0, 0.0));
     float c = hash(i + vec2(0.0, 1.0));
     float d = hash(i + vec2(1.0, 1.0));
-
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
   }
 
-  // Pebble pattern — subtle clustered bumps
+  // Voronoi-based pebble pattern — discrete hemispherical bumps
+  // Real pebble: water droplets sprayed on ice freeze into individual
+  // ~1-3mm hemispheres in a semi-random grid pattern.
   float pebblePattern(vec2 uv, float wear) {
-    float scale = 80.0;
-    float n1 = noise(uv * scale);
-    float n2 = noise(uv * scale * 2.3 + 42.0);
-    float n3 = noise(uv * scale * 0.7 - 17.0);
+    float scale = 55.0; // ~55 pebble cells per world UV unit ≈ 2mm spacing
+    vec2 p = uv * scale;
+    vec2 cell = floor(p);
+    vec2 f = fract(p);
 
-    // Pebble bumps: gentle peaks that flatten with wear
-    float pebble = smoothstep(0.5 - wear * 0.1, 0.72, n1 * 0.5 + n2 * 0.3 + n3 * 0.2);
+    float minDist = 1.0;
+    // Check 3x3 neighbourhood for nearest pebble centre
+    for (int y = -1; y <= 1; y++) {
+      for (int x = -1; x <= 1; x++) {
+        vec2 neighbor = vec2(float(x), float(y));
+        vec2 point = hash2(cell + neighbor); // random offset within cell
+        point = 0.3 + 0.4 * point; // cluster toward cell centre (0.3–0.7 range)
+        vec2 diff = neighbor + point - f;
+        float d = length(diff);
+        minDist = min(minDist, d);
+      }
+    }
 
-    // Wear smooths the pebble tops
-    return pebble * (0.6 - wear * 0.4);
+    // Shape each pebble as a hemisphere: 1.0 at centre, 0.0 at edge
+    float pebbleRadius = 0.32 - wear * 0.08; // shrinks as wear flattens tops
+    float bump = 1.0 - smoothstep(0.0, pebbleRadius, minDist);
+    bump = bump * bump; // square for rounder hemisphere profile
+
+    return bump * (0.5 - wear * 0.35);
   }
 
   // Fresnel reflectance (Schlick approximation)
@@ -84,14 +101,14 @@ const fragmentShader = /* glsl */ `
     // Pebble texture
     float pebble = pebblePattern(worldUV, uPebbleWear);
 
-    // Perturb normal with pebble bumps
-    float dx = pebblePattern(worldUV + vec2(0.001, 0.0), uPebbleWear) - pebble;
-    float dy = pebblePattern(worldUV + vec2(0.0, 0.001), uPebbleWear) - pebble;
-    vec3 bumpNormal = normalize(vWorldNormal + vec3(dx, 0.0, dy) * 2.0 * (1.0 - uPebbleWear * 0.5));
+    // Perturb normal with pebble bumps (discrete hemispheres need tighter sample offset)
+    float dx = pebblePattern(worldUV + vec2(0.0004, 0.0), uPebbleWear) - pebble;
+    float dy = pebblePattern(worldUV + vec2(0.0, 0.0004), uPebbleWear) - pebble;
+    vec3 bumpNormal = normalize(vWorldNormal + vec3(dx, 0.0, dy) * 3.0 * (1.0 - uPebbleWear * 0.5));
 
     // Base ice color with depth variation
     float depth = noise(worldUV * 3.0) * 0.15;
-    vec3 baseColor = mix(uIceColor, uIceDeepColor, depth + pebble * 0.3);
+    vec3 baseColor = mix(uIceColor, uIceDeepColor, depth + pebble * 0.12);
 
     // Diffuse lighting
     float diffuse = max(dot(bumpNormal, uLightDir), 0.0);
@@ -112,8 +129,8 @@ const fragmentShader = /* glsl */ `
     float sss = max(0.0, dot(-vViewDir, uLightDir)) * 0.12;
     lit += vec3(0.6, 0.85, 1.0) * sss;
 
-    // Pebble highlight — subtle bright spots on pebble tops
-    float pebbleHighlight = smoothstep(0.6, 0.9, pebble) * 0.06 * (1.0 - uPebbleWear * 0.5);
+    // Pebble highlight — specular catch on top of each hemisphere
+    float pebbleHighlight = smoothstep(0.15, 0.35, pebble) * 0.05 * (1.0 - uPebbleWear * 0.5);
     lit += vec3(1.0) * pebbleHighlight;
 
     // Very subtle sparkle from pebble facets
