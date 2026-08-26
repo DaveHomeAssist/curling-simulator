@@ -1,4 +1,5 @@
 import { addMessage, createGameState, resetPlayingSurface, seedChallenge, setRenderer, startMode } from './game/state.js';
+import { applySnapshot, bindPersistence, loadSnapshot } from './game/persistence.js';
 import { createLoop } from './game/loop.js';
 import { bindInput } from './game/input.js';
 import { createRenderer2D } from './render/renderer2d.js';
@@ -237,6 +238,12 @@ function mount() {
   }
   resize();
   startMode(state, 'exhibition');
+  const savedSession = loadSnapshot();
+  if (savedSession) {
+    applySnapshot(state, savedSession);
+    addMessage(state, 'Restored your saved game.');
+  }
+  bindPersistence(state);
   if (runtime.requestedRenderer === '3d') {
     if (state.rendererReady) {
       setRenderer(state, '3d');

@@ -2,6 +2,14 @@
 
 Grouped by development day. See `git log` for the full commit-level history.
 
+## 2026-08-26 — Audit remediation: challenge flow, real tournament bracket, CI test gate, session persistence
+
+- Shot Challenge no longer scores/advances an end after its single delivery: the drill, stones, medal, and summary stay on screen, the result chip shows the medal, and a working Try Again (plus Reset) reseeds the drill (audit H-1).
+- Tournament is a real 4-team single-elimination bracket: named semifinal vs a bracket opponent, the other semifinal is simulated, winning advances you into the final, losing eliminates you and resolves a champion, and tied matches play an extra end. The bracket card renders the actual bracket state — round, wins, eliminations, champion (audit H-2).
+- The Pages deploy workflow now runs `npm test` before the Vite build, so a broken physics/scoring/challenge/mode change can no longer publish green (audit M-1).
+- Session persistence (`src/game/persistence.js`): match score, ends, hammer, stones, mode, challenge medals, bracket progress, and audio preference survive reloads, crashes, and mobile tab eviction via localStorage snapshots saved on hide/close and a 5s interval (audit M-2).
+- New Vitest coverage for the challenge flow, tournament bracket, and persistence round-trip (13 new tests; 53 total).
+
 ## 2026-03-20 — Core build: physics, 3D renderer, mobile shell
 
 - Phase 0–2 build-out: modular physics engine + test harnesses, then the Three.js 3D renderer, camera system, and `main.js` wiring.
