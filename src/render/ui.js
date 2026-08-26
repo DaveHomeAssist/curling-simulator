@@ -350,6 +350,8 @@ export function createUI(root) {
     }
   });
 
+  let lastMetaHtml = '';
+
   return {
     elements,
     render(state) {
@@ -439,50 +441,51 @@ export function createUI(root) {
         : `${state.teams[state.currentTeam].name.toUpperCase()} TO PLAY · ${state.rendererReady ? '3D arena live' : state.rendererMessage}`;
 
       // --- Challenge medal display ---
-      if (state.gameMode === 'challenge' && state.challengeResult != null) {
+      let metaHtml = '';
+      if (state.gameMode === 'challenge' && state.challengeMedal != null) {
         const medalMap = {
           gold: 'gold',
           silver: 'silver',
           bronze: 'bronze',
         };
-        const tier = state.challengeResult.medal;
+        const tier = state.challengeMedal;
         const medalClass = medalMap[tier] ?? 'miss';
-        const distText = state.challengeResult.distance != null
-          ? `${state.challengeResult.distance.toFixed(2)}m from target`
-          : '';
-        elements.challengeMeta.innerHTML = `
+        const badgeLabel = medalMap[tier] ? tier.toUpperCase() : 'MISS';
+        metaHtml = `
           <div class="drawer-meta-card">
             <div class="drawer-meta-row">
-              <span class="drawer-badge drawer-badge-${medalClass}">${(tier ?? 'miss').toUpperCase()}</span>
-              ${distText ? `<span class="drawer-meta-copy">${distText}</span>` : ''}
+              <span class="drawer-badge drawer-badge-${medalClass}">${badgeLabel}</span>
+              ${state.challengeSummary ? `<span class="drawer-meta-copy">${state.challengeSummary}</span>` : ''}
             </div>
             <button class="drawer-chip-button drawer-chip-compact" id="challenge-try-again" type="button">Try Again</button>
           </div>
         `;
-        const tryAgainBtn = elements.challengeMeta.querySelector('#challenge-try-again');
-        if (tryAgainBtn && typeof state.seedChallenge === 'function') {
-          tryAgainBtn.addEventListener('click', state.seedChallenge);
-        }
-      } else if (state.gameMode === 'tournament' && state.tournament) {
+      } else if (state.gameMode === 'tournament' && state.tournament?.enabled) {
         // --- Tournament bracket display ---
-        const { teams = [], currentMatchIndex = 0, round = 1 } = state.tournament;
-        const teamRows = teams.map((team, i) => {
-          const isCurrent = i === currentMatchIndex || (i === currentMatchIndex + 1);
+        const bracket = state.tournament;
+        const stageLabel = bracket.champion ? 'CHAMPION' : bracket.round === 1 ? 'SEMIFINAL' : 'FINAL';
+        const teamRows = bracket.teams.map((name) => {
+          const isCurrent = !bracket.champion && (name === bracket.playerTeam || name === bracket.opponent)
+            && !bracket.eliminated.includes(name);
+          const isOut = bracket.eliminated.includes(name);
+          const isChampion = name === bracket.champion;
           return `
-            <div class="tournament-row${isCurrent ? ' is-current' : ''}">
-              <span class="tournament-team">${team.name ?? `Team ${i + 1}`}</span>
-              <span class="drawer-badge drawer-badge-neutral">${team.wins ?? 0}W</span>
+            <div class="tournament-row${isCurrent || isChampion ? ' is-current' : ''}${isOut ? ' is-out' : ''}">
+              <span class="tournament-team">${name}${name === bracket.playerTeam ? ' (You)' : ''}${isChampion ? ' 🏆' : ''}</span>
+              <span class="drawer-badge drawer-badge-neutral">${bracket.wins[name] ?? 0}W</span>
             </div>
           `;
         }).join('');
-        elements.challengeMeta.innerHTML = `
+        metaHtml = `
           <div class="drawer-meta-card tournament-card">
-            <div class="drawer-kicker tournament-kicker">ROUND ${round} · TOURNAMENT</div>
+            <div class="drawer-kicker tournament-kicker">ROUND ${bracket.round} · ${stageLabel}</div>
             ${teamRows}
           </div>
         `;
-      } else {
-        elements.challengeMeta.innerHTML = '';
+      }
+      if (metaHtml !== lastMetaHtml) {
+        elements.challengeMeta.innerHTML = metaHtml;
+        lastMetaHtml = metaHtml;
       }
 
       elements.settingsDetail.textContent = `${state.rendererReady ? `Renderer ${state.renderer.toUpperCase()}` : state.rendererMessage} · Audio ${state.audio.enabled ? 'on' : 'off'} · Crowd ${state.audio.crowdMood}`;

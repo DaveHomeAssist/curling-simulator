@@ -266,8 +266,11 @@ export function createGameState() {
       bracketSize: 4,
       round: 1,
       teams: ['Crimson Skip', 'Golden Sweep', 'Northern Pebble', 'Stone Lake'],
-      currentMatch: 0,
+      playerTeam: 'Crimson Skip',
+      opponent: 'Golden Sweep',
       wins: {},
+      eliminated: [],
+      champion: null,
     },
     multiplayer: {
       enabled: false,
@@ -515,6 +518,16 @@ export function finalizeTravel(state, settledAt = performance.now()) {
 
   if (state.gameMode === 'challenge') {
     updateChallengeResult(state);
+    // A challenge is a single graded delivery: keep the drill, stones, and
+    // medal on screen instead of scoring/advancing an end (which would wipe
+    // the result and install fresh 8/8 inventories).
+    state.canThrow = false;
+    state.resultChip = {
+      title: state.challengeMedal === 'none' ? 'NO MEDAL' : `${state.challengeMedal.toUpperCase()} MEDAL`,
+      detail: state.challengeSummary,
+      until: settledAt + 3200,
+    };
+    return;
   }
 
   if (state.gameMode === 'practice') {
@@ -579,21 +592,18 @@ export function scoreEnd(state) {
 
 export function prepareNextEnd(state) {
   if (state.end >= state.maxEnds) {
-    state.mode = 'game-over';
-    state.canThrow = false;
-    if (state.gameMode === 'tournament') {
-      const winner = state.totalScore.red >= state.totalScore.yel ? 'red' : 'yel';
-      const winnerName = state.teams[winner].name;
-      state.tournament.wins[winnerName] = (state.tournament.wins[winnerName] ?? 0) + 1;
-      state.tournament.currentMatch += 1;
-      if (state.tournament.currentMatch >= Math.max(1, state.tournament.bracketSize / 2)) {
-        state.tournament.round += 1;
-        state.tournament.currentMatch = 0;
+    if (state.gameMode === 'tournament' && state.totalScore.red === state.totalScore.yel) {
+      state.maxEnds += 1;
+      addMessage(state, 'Tied after regulation. Playing an extra end.');
+    } else {
+      state.mode = 'game-over';
+      state.canThrow = false;
+      addMessage(state, `Game over. ${state.totalScore.red}-${state.totalScore.yel}.`);
+      if (state.gameMode === 'tournament') {
+        finishTournamentMatch(state);
       }
-      addMessage(state, `${winnerName} advances in the tournament bracket.`);
+      return;
     }
-    addMessage(state, `Game over. ${state.totalScore.red}-${state.totalScore.yel}.`);
-    return;
   }
 
   state.end += 1;
@@ -610,6 +620,75 @@ export function prepareNextEnd(state) {
   state.dirtyPreview = true;
   state.cameraMode = state.preferredCameraMode;
   state.cameraHoldUntil = 0;
+}
+
+export function seedTournament(state) {
+  const bracket = state.tournament;
+  bracket.enabled = true;
+  bracket.round = 1;
+  bracket.wins = {};
+  bracket.eliminated = [];
+  bracket.champion = null;
+  bracket.playerTeam = bracket.teams[0];
+  bracket.opponent = bracket.teams[1];
+  state.teams.red.name = bracket.playerTeam;
+  state.teams.yel.name = bracket.opponent;
+  addMessage(state, `Semifinal: ${bracket.playerTeam} vs ${bracket.opponent}. Win to advance.`);
+}
+
+function startTournamentMatch(state) {
+  state.end = 1;
+  state.maxEnds = 6;
+  state.totalScore = { red: 0, yel: 0 };
+  state.scoreByEnd = makeScoreboard();
+  state.currentTeam = 'red';
+  state.hammerTeam = 'yel';
+  state.shotNumber = 0;
+  state.stonesRemainingByTeam = { red: 8, yel: 8 };
+  state.shotTypeCommitted = false;
+  state.turnCommitted = false;
+  resetPlayingSurface(state);
+}
+
+function finishTournamentMatch(state) {
+  const bracket = state.tournament;
+  const playerWon = state.totalScore.red > state.totalScore.yel;
+  const winner = playerWon ? bracket.playerTeam : bracket.opponent;
+  const loser = playerWon ? bracket.opponent : bracket.playerTeam;
+  bracket.wins[winner] = (bracket.wins[winner] ?? 0) + 1;
+  bracket.eliminated.push(loser);
+
+  if (bracket.round === 1) {
+    const [, , semiA, semiB] = bracket.teams;
+    const otherWinner = Math.random() < 0.5 ? semiA : semiB;
+    const otherLoser = otherWinner === semiA ? semiB : semiA;
+    bracket.wins[otherWinner] = (bracket.wins[otherWinner] ?? 0) + 1;
+    bracket.eliminated.push(otherLoser);
+    addMessage(state, `Other semifinal: ${otherWinner} defeats ${otherLoser}.`);
+
+    if (!playerWon) {
+      const finalWinner = Math.random() < 0.5 ? winner : otherWinner;
+      const finalLoser = finalWinner === winner ? otherWinner : winner;
+      bracket.wins[finalWinner] = (bracket.wins[finalWinner] ?? 0) + 1;
+      bracket.eliminated.push(finalLoser);
+      bracket.champion = finalWinner;
+      addMessage(state, `${bracket.playerTeam} is eliminated. ${finalWinner} takes the title.`);
+      return;
+    }
+
+    bracket.round = 2;
+    bracket.opponent = otherWinner;
+    state.teams.yel.name = otherWinner;
+    addMessage(state, `${bracket.playerTeam} advances. Final: ${bracket.playerTeam} vs ${otherWinner}.`);
+    startTournamentMatch(state);
+    return;
+  }
+
+  bracket.champion = winner;
+  addMessage(
+    state,
+    playerWon ? `${bracket.playerTeam} wins the tournament!` : `${bracket.opponent} wins the tournament final.`,
+  );
 }
 
 export function resetPlayingSurface(state) {
@@ -648,10 +727,17 @@ export function startMode(state, mode) {
   state.multiplayer.status = mode === 'multiplayer' ? 'local-lobby' : 'offline';
   state.shotTypeCommitted = false;
   state.turnCommitted = false;
+  state.tournament.enabled = mode === 'tournament';
+  if (mode !== 'tournament') {
+    state.teams = structuredClone(DEFAULT_TEAMS);
+  }
   resetPlayingSurface(state);
   addMessage(state, `${formatModeLabel(mode)} mode ready.`);
   if (mode === 'challenge') {
     seedChallenge(state);
+  }
+  if (mode === 'tournament') {
+    seedTournament(state);
   }
 }
 
@@ -663,6 +749,7 @@ export function seedChallenge(state, challengeId = state.selectedChallengeId) {
   state.currentTeam = 'red';
   state.ai.enabled = false;
   state.stonesRemainingByTeam = { red: 1, yel: 0 };
+  state.shotNumber = 0;
   state.stones = challenge.setupStones.map((stone, index) => {
     const seeded = createStone(stone.x, 0, 0, stone.team, `setup-${index}`);
     seeded.x = stone.x;

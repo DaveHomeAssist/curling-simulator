@@ -180,7 +180,11 @@ function mount() {
 
   const actions = {
     resetSurface() {
-      resetPlayingSurface(state);
+      if (state.gameMode === 'challenge') {
+        seedChallenge(state);
+      } else {
+        resetPlayingSurface(state);
+      }
     },
     loadChallenge(challengeId) {
       seedChallenge(state, challengeId);
@@ -211,6 +215,7 @@ function mount() {
     settingsModal: ui.elements.settingsModal,
     challengeSelect: ui.elements.challengeSelect,
     resetButton: ui.elements.resetButton,
+    challengeMeta: ui.elements.challengeMeta,
   }, {
     actions,
   });

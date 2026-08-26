@@ -176,6 +176,11 @@ export function bindInput(state, elements, services) {
   });
   elements.modeSelect?.addEventListener('change', () => closeModal(state));
   elements.resetButton?.addEventListener('click', () => services.actions?.resetSurface());
+  elements.challengeMeta?.addEventListener('click', (event) => {
+    if (event.target.closest?.('#challenge-try-again')) {
+      services.actions?.loadChallenge(state.selectedChallengeId);
+    }
+  });
   elements.scoreStrip?.addEventListener('click', () => toggleModal(state, 'history'));
   elements.scoreStrip?.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {

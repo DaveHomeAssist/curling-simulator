@@ -605,6 +605,14 @@ select,
   opacity: 1;
 }
 
+.tournament-row.is-out {
+  opacity: 0.38;
+}
+
+.tournament-row.is-out .tournament-team {
+  text-decoration: line-through;
+}
+
 .tournament-team {
   font-family: 'Syne', system-ui, sans-serif;
   font-size: 0.86rem;
