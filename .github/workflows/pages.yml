@@ -23,6 +23,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm test
       - run: npx vite build --base /curling-simulator/
       - uses: actions/upload-pages-artifact@v3
         with:
