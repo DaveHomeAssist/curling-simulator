@@ -242,6 +242,7 @@ async function boot() {
     renderer.broadcast?.(broadcast.frame());
     $('#skip-tour').hidden = !renderer.getTour?.().active;
     $('#tour-title').hidden = $('#skip-tour').hidden;
+    $('.stage-wrap').classList.toggle('tour-active', !$('#skip-tour').hidden);
     const playbackFrame = replay.frame();
     renderer.render(playbackFrame ? { previous: playbackFrame, current: playbackFrame } : pair, playbackFrame ? 1 : alpha, playbackFrame || view, controls, playbackFrame ? null : physics.world);
     $('#player-two-label').textContent = mode === 'solo' ? 'Computer' : 'Player 2';

@@ -581,9 +581,12 @@ legend {
 
 .menu-help summary:focus-visible { outline: 3px solid var(--aim); outline-offset: 2px; }
 
-#skip-tour { position: absolute; bottom: 2.5rem; right: 0.75rem; background: #162f36; color: white; border: 1px solid #b8dadb; z-index: 3; }
+#skip-tour { position: absolute; bottom: 0.75rem; right: 0.75rem; background: #162f36; color: white; border: 1px solid #b8dadb; z-index: 3; }
 
-#tour-title { position: absolute; left: 1rem; top: 3rem; color: white; text-shadow: 0 2px 8px #102a25; pointer-events: none; padding: 0.75rem 1rem; background: #102a25c9; border-left: 3px solid #ffc56c; }
+#tour-title { position: absolute; left: 1rem; top: 1rem; color: white; text-shadow: 0 2px 8px #102a25; pointer-events: none; padding: 0.75rem 1rem; background: #102a25c9; border-left: 3px solid #ffc56c; }
 #tour-title span, #tour-title strong, #tour-title small { display: block; }
 #tour-title span { font-size: 0.65rem; letter-spacing: 0.18em; color: #ffe0a5; }
 #tour-title strong { font-family: Georgia, serif; font-size: clamp(1rem, 2.5vw, 2rem); }
+
+.tour-active .stage-status, .tour-active .camera-help, .tour-active #camera-button { visibility: hidden; }
+@media (max-height: 500px) { #tour-title { top: 0.5rem; left: 0.5rem; padding: 0.3rem 0.5rem; } #tour-title span, #tour-title small { display: none; } #tour-title strong { font-size: 1rem; } }
