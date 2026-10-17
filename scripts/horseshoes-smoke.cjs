@@ -1,3 +1,4 @@
+// Browser regression for local two-player Horseshoes and practice.
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict'),
   fs = require('node:fs');
@@ -6,9 +7,10 @@ const url =
 const output = process.env.HORSESHOES_OUTPUT || '/tmp/horseshoes-phase2-smoke';
 fs.mkdirSync(output, { recursive: true });
 (async () => {
+  const configured = { headless: true, args: ['--use-gl=angle', '--use-angle=swiftshader'], ...(process.env.PW_EXECUTABLE_PATH ? { executablePath: process.env.PW_EXECUTABLE_PATH } : {}) };
   const browser = await chromium.launch({
-    headless: true,
-    args: ['--no-sandbox', '--enable-unsafe-swiftshader'],
+    ...configured,
+    args: [...configured.args, '--no-sandbox', '--enable-unsafe-swiftshader'],
   });
   const results = [];
   try {
@@ -151,6 +153,28 @@ fs.mkdirSync(output, { recursive: true });
       await activate('#settings-tab');
       await activate('#restart-button');
       assert.deepEqual((await state()).match.scores, [0, 0]);
+      // Four fair pitches remain physical and displace an earlier shoe. Score
+      // only their final arrangement, rather than subtracting two raw totals.
+      await page.evaluate(() => __horseshoes.stop());
+      await activate('[data-arc=normal]');
+      await activate('[data-style=turn]');
+      await setRange('#aim', 0);
+      await setRange('#strength', 50);
+      let firstPosition;
+      for (let n = 0; n < 4; n++) {
+        await activate('#throw-button');
+        const landed = await settle();
+        assert.equal(landed.shoes.filter((shoe) => !shoe.removed).length, n + 1);
+        if (n === 0) firstPosition = landed.shoes[0].position;
+        if (n < 3) assert.deepEqual(landed.match.scores, [0, 0]);
+      }
+      const interacting = await state();
+      assert.deepEqual(interacting.match.scores, [2, 0]);
+      assert.equal(interacting.match.result.shoes.filter((shoe) => shoe.foul).length, 0);
+      assert.notDeepEqual(interacting.shoes[0].position, firstPosition);
+      await page.screenshot({ path: `${output}/${width}-four-shoes.png` });
+      await activate('#settings-tab');
+      await activate('#restart-button');
       // Entire game via real throws. Player 1's first shoe is close; the other three
       // use minimum strength and foul short. No score/state injection.
       await page.evaluate(() => __horseshoes.stop());
@@ -295,9 +319,53 @@ fs.mkdirSync(output, { recursive: true });
       });
       await context.close();
     }
+    // The WebGL failure path must reverse the actual drawn court as well as
+    // the match label, keep close view on the active stake, and reset in practice.
+    const fallback = [];
+    for (const [width, height, touch] of [[1440, 900, false], [375, 812, true]]) {
+      const context = await browser.newContext({ viewport: { width, height }, hasTouch: touch, isMobile: touch });
+      const page = await context.newPage();
+      const errors = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      const fallbackUrl = new URL(url);
+      fallbackUrl.searchParams.set('renderer', '2d');
+      await page.goto(fallbackUrl.href, { waitUntil: 'networkidle' });
+      await page.waitForFunction(() => window.__horseshoes);
+      await page.evaluate(() => __horseshoes.stop());
+      const state = () => page.evaluate(() => __horseshoes.getState());
+      const activate = (selector) => touch ? page.locator(selector).tap() : page.locator(selector).click();
+      assert.equal((await state()).renderer, '2d-fallback');
+      for (const end of [0, 1]) {
+        assert.equal((await state()).match.end, end);
+        assert.equal((await state()).cameraPose.end, end);
+        await page.screenshot({ path: `${output}/${width}-fallback-end-${end}.png` });
+        for (let n = 0; n < 4; n++) {
+          await page.locator('#strength').fill(n === 0 ? '50' : '0');
+          await page.locator('#strength').dispatchEvent('input');
+          await activate('#throw-button');
+          await page.evaluate(() => advanceTime(13000));
+        }
+        assert.equal((await state()).match.scores[0], end + 1);
+        assert.equal((await state()).camera, 'close');
+        assert.equal((await state()).cameraPose.end, end);
+        await page.screenshot({ path: `${output}/${width}-fallback-score-${end}.png` });
+        if (end === 0) await activate('#next-button');
+      }
+      await activate('#settings-tab');
+      await page.selectOption('#mode', 'practice');
+      assert.equal((await state()).cameraPose.end, 0);
+      assert.equal((await state()).mode, 'horseshoes-practice');
+      await activate('#throw-button');
+      await page.evaluate(() => advanceTime(13000));
+      await activate('#retry-button');
+      assert.equal((await state()).shoe.status, 'ready');
+      assert.deepEqual(errors, []);
+      fallback.push({ width, height, touch, innings: 2, score: [2, 0], errors });
+      await context.close();
+    }
     fs.writeFileSync(
       `${output}/report.json`,
-      JSON.stringify({ url, results }, null, 2),
+      JSON.stringify({ url, results, fallback }, null, 2),
     );
     console.log('Horseshoes Phase 2 smoke passed', JSON.stringify(results));
   } finally {

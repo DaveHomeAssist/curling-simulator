@@ -37,6 +37,21 @@ Physical-phone, screen-reader and human play acceptance have not been supplied. 
 
 No Horseshoes record exists in the private cross-project board registry; board synchronization is pending routing rather than reported current. This public-safe document owns the project's current next steps.
 
+## October 17 publication review corrections
+
+PR156 review confirmed that the Canvas fallback never applied the active-end
+transform. The fallback now rotates the court, shoes, trajectory and diagnostics
+180 degrees for end A in a fixed north-up view, and moves the close-view bounds
+to the active stake. Restart and practice restore end B as the target. Two
+canvas regression tests fail on the prior source and pass on the correction.
+All 73 source tests and the production build pass in an isolated cloud Linux
+checkout. The smoke script also honors a configured Chromium executable and
+adds four interacting fair pitches plus desktop/mobile fallback innings.
+
+Next: pass browser and source PR checks, publish the rebuilt isolated route with
+the generated catalog, then verify the live match and full integration CI.
+Physical-device testing and human acceptance remain outstanding.
+
 ## Reproducible checks
 
 - `npm ci && npm test && npm run build`
