@@ -28,7 +28,7 @@ try{for(const [width,height,touch] of [[1440,900,false],[375,812,true],[667,375,
   await page.locator('#throw-button').click();await page.evaluate(()=>advanceTime(14000));assert.equal((await state()).broadcast.end,(await state()).match.end);
  }
 
- await page.locator('#settings-tab').click();await page.locator('#tour-button').click();await page.evaluate(()=>advanceTime(6200));assert.equal((await state()).tour.active,false);assert.ok(['pitching','close'].includes((await state()).camera));
+ await page.locator('#settings-tab').click();await page.locator('#tour-button').click();await page.evaluate(()=>advanceTime(6200));assert.equal((await state()).tour.active,false);assert.equal((await state()).camera,'pitching');
  await page.locator('#settings-tab').click();await page.locator('#monitors-button').click();await page.screenshot({path:`${output}/${width}-screen-close.png`});await page.locator("#camera-button").click();assert.equal((await state()).camera,"pitching");
  await page.locator('#settings-tab').click();await page.locator('#tour-button').click();
  await page.locator('#horseshoe-stage canvas').click({position:{x:60,y:60}});assert.equal((await state()).tour.active,false);
@@ -38,4 +38,9 @@ try{for(const [width,height,touch] of [[1440,900,false],[375,812,true],[667,375,
  assert.deepEqual(errors,[]);results.push({width,height,touch,screens:4,concurrentThrow:true,tour:true,errors});await context.close();
 }
 const context=await browser.newContext({reducedMotion:'reduce'}),page=await context.newPage();await page.goto(url);await page.waitForFunction(()=>window.__horseshoes);await page.locator('#menu-resume').click();assert.equal((await page.evaluate(()=>__horseshoes.getState())).tour.active,false);await context.close();
+const delayed=await browser.newContext();delayed.setDefaultTimeout(30000);const slow=await delayed.newPage();let release;
+await slow.route('**/fmp-venue*.json',async route=>{await new Promise(resolve=>{release=resolve;});await route.continue();});
+await slow.goto(url,{waitUntil:'domcontentloaded'});await slow.waitForFunction(()=>window.__horseshoes);
+await slow.locator('#monitors-button').click();const before=await slow.evaluate(()=>__horseshoes.getState());assert.equal(before.broadcast.screens,0);assert.equal(before.camera,'monitors');release();
+await slow.waitForFunction(()=>__horseshoes.getState().broadcast.screens===4);const after=await slow.evaluate(()=>__horseshoes.getState());assert.notDeepEqual(after.cameraPose,before.cameraPose);await delayed.close();
 fs.writeFileSync(`${output}/report.json`,JSON.stringify({url,results,reducedMotion:true},null,2));console.log(JSON.stringify(results));}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

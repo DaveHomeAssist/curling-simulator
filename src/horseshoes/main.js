@@ -240,6 +240,7 @@ async function boot() {
         ? { previous: ready(), current: ready() }
         : physics.getInterpolationPair();
     renderer.broadcast?.(broadcast.frame());
+    $('#camera-button').textContent = renderer.getCameraMode() === 'pitching' ? 'Close view' : 'Pitching view';
     $('#skip-tour').hidden = !renderer.getTour?.().active;
     $('#tour-title').hidden = $('#skip-tour').hidden;
     $('.stage-wrap').classList.toggle('tour-active', !$('#skip-tour').hidden);

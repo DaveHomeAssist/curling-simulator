@@ -260,7 +260,9 @@ export function createHorseshoeRenderer(container) {
   renderFeed(undefined);
   new THREE.ObjectLoader().load(new URL('./assets/fmp-venue.json', import.meta.url).href, (venue) => {
     if (disposed) return;
-    bindMonitors(venue); scene.add(venue); environment = 'fmp-lawn'; renderer.render(scene, camera);
+    bindMonitors(venue); scene.add(venue); environment = 'fmp-lawn';
+    if (cameraMode === 'monitors') applyCamera();
+    renderer.render(scene, camera);
   }, undefined, () => { environment = 'unavailable'; });
   scene.add(new THREE.HemisphereLight(0xd8f4eb, 0x1b241d, 1.9));
   const sun = new THREE.DirectionalLight(0xffe3b0, 3.2);
@@ -331,7 +333,7 @@ export function createHorseshoeRenderer(container) {
     orbit.update();
   }
   applyCamera();
-  function stopTour() { if (tourTime === null) return; tourTime = null; orbit.enabled = true; applyCamera(); }
+  function stopTour() { if (tourTime === null) return; tourTime = null; cameraMode = 'pitching'; orbit.enabled = true; applyCamera(); }
   renderer.domElement.addEventListener('pointerdown', stopTour);
   renderer.domElement.addEventListener('wheel', stopTour, { passive: true });
 
