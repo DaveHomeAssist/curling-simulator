@@ -158,3 +158,7 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - Live verification reproduced an instantaneous waveform-probe miss on ultrawide despite played events; reducing raster size was insufficient. Replaced the source probe with MediaRecorder capture of the analyser output and decoded RMS, retaining nonzero output assertions at the original viewport. Live ultrawide recorded RMS0.00035269; remaining updated suite checks pending. Mixmash test-only PR167 owns the identical harness update; production assets remain unchanged.
 
 - Live winning-screen visual review found stale “restart from Options” guidance. Updated it to Menu and added a completion-screen assertion; no gameplay behavior changes.
+
+2026-10-17 — FMP menu release closure
+- Final Mixmash PR167 merge 772e2afa49747c6e32fa976e9ad8211bad10d608: full pre/post CI, dedicated gameplay and Pages passed. Live HTML/five assets match; final Menu/Controls guidance, recorded audio and return-link/original-game spot checks passed. Comprehensive prior FMP build checks remain applicable to unchanged gameplay/layout. Source PR9/10/11 are merged.
+- Next: physical-device and FMP likeness feedback. Original games and noindex preserved; private board routing gap remains. See docs/HORSESHOES_RELEASE.md for exact runs and scope.
