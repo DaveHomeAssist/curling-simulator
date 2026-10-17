@@ -44,7 +44,7 @@ export function createHorseshoeRenderer2D(container) {
   const canvas = document.createElement('canvas');
   canvas.setAttribute(
     'aria-label',
-    'Top-down fallback view of the horseshoes practice court',
+    'Top-down horseshoes court, pitching from end A to B',
   );
   container.appendChild(canvas);
   const context = canvas.getContext('2d');
@@ -52,6 +52,18 @@ export function createHorseshoeRenderer2D(container) {
   let height = 1;
   let cameraMode = 'pitching';
   let diagnostics = false;
+  let end = 0;
+
+  function viewBounds() {
+    const view = VIEWS[cameraMode];
+    return end
+      ? {
+          ...view,
+          zMin: COURT.stakeDistance - view.zMax,
+          zMax: COURT.stakeDistance - view.zMin,
+        }
+      : view;
+  }
 
   function resize() {
     const rect = container.getBoundingClientRect();
@@ -66,16 +78,21 @@ export function createHorseshoeRenderer2D(container) {
   }
 
   function projector() {
-    const view = VIEWS[cameraMode];
+    const view = viewBounds();
     const scale = Math.min(
       width / (view.xMax - view.xMin),
       height / (view.zMax - view.zMin),
     );
     const offsetX = (width - (view.xMax - view.xMin) * scale) / 2;
     const offsetY = (height - (view.zMax - view.zMin) * scale) / 2;
+    // Physics stays in the active end's local frame. Keep the top-down view
+    // north-up and rotate every court, shoe, trajectory and diagnostic point
+    // into the same physical end transform used by the Three renderer.
     return (x, z) => ({
-      x: offsetX + (x - view.xMin) * scale,
-      y: height - offsetY - (z - view.zMin) * scale,
+      x: offsetX + ((end ? -x : x) - view.xMin) * scale,
+      y:
+        height - offsetY -
+        ((end ? COURT.stakeDistance - z : z) - view.zMin) * scale,
       scale,
     });
   }
@@ -259,6 +276,14 @@ export function createHorseshoeRenderer2D(container) {
 
   return {
     kind: '2d-fallback',
+    setEnd(value) {
+      end = value ? 1 : 0;
+      canvas.setAttribute(
+        'aria-label',
+        `Top-down horseshoes court, pitching from end ${end ? 'B to A' : 'A to B'}`,
+      );
+    },
+    getCamera: () => ({ end, ...viewBounds() }),
     resize,
     render,
     setCameraMode(mode) {
