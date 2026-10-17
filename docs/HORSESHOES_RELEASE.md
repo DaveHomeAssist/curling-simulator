@@ -48,8 +48,7 @@ All 73 source tests and the production build pass in an isolated cloud Linux
 checkout. The smoke script also honors a configured Chromium executable and
 adds four interacting fair pitches plus desktop/mobile fallback innings.
 
-Next: pass browser and source PR checks, publish the rebuilt isolated route with
-the generated catalog, then verify the live match and full integration CI.
+The correction is included in the current Phase 3 publication verified below.
 Physical-device testing and human acceptance remain outstanding.
 
 ## Reproducible checks
@@ -61,8 +60,22 @@ Physical-device testing and human acceptance remain outstanding.
 
 ## Phase 3 — AI, audio and replay
 
-Approved October 17, 2026; see HORSESHOES_PHASE3_BRIEF.md. Implemented worker-based solo opponent with Easy/Normal candidate budgets, contact-driven procedural audio with mute/volume, last/best transform replay with pause/scrub/exit, and concise throw feedback. Local matches/practice and original game boundaries remain.
+Approved October 17, 2026; see HORSESHOES_PHASE3_BRIEF.md. Published at [Mixmash Horseshoes](https://mixmash.games/horseshoes/). Options offers solo versus computer, local two-player and practice. Easy/Normal AI searches actual simulated candidates in a worker; contact-driven optional audio has mute/volume; last/best transform replay supports pause, scrub and exit without changing the live score or world.
 
-Validation on the Linux runner: 76 source tests and production build passed. Clone parity includes an occupied court and removed foul shoe; the selected candidate produces the same result when launched in the live simulator. Four viewport solo matches completed24 throws/six innings at0–22. Maximum observed candidate search767ms Normal /364ms Easy, with main-thread animation continuing. Replay leaves match/physics state unchanged; audio produced a measurable signal and mute silenced it. This does not establish human listening or physical-device acceptance.
+The October 17 player feedback correction renames the former Play tab to Controls, uses neutral underlined navigation above the deck on all screen sizes, and keeps Throw as the primary colored action. Mobile placement follows WEB-2's explicit product-usability allowance and aligns visual order with keyboard order. Source PR4's fallback court reversal correction is included.
 
-Publication and full postmerge evidence remain pending. Next: complete source and isolated Mixmash delivery, then verify the published build and preserve the physical-device feedback step.
+### Source and publication
+
+- Phase 3 source [PR6](https://github.com/DaveHomeAssist/curling-simulator/pull/6) merged as `d206cceb6b494d1778eebabfa12597fbd2bde799`; source CI 39011494882 and postmerge 39011566624 passed.
+- Initial publication [PR159](https://github.com/DaveHomeAssist/mixmash/pull/159) merged as `6db8334b41e2ec1f08a028a08e8a9eb3c33dd8b2`. Pages 39025463426 and dedicated gameplay 39025463788 passed. Full postmerge 39025463765 failed because the shared admin index omitted concurrently landed Mars files. That failure is retained as historical evidence, superseded by the current full checks below.
+- Controls [source PR7](https://github.com/DaveHomeAssist/curling-simulator/pull/7), candidate `b16d2ffe6df47d0416a89f3b67fe951590047455`, merged as `a90b48ea8cbf8a32d8942db59d6e63cfad88bcbe`. Exact source CI 39035620247 and postmerge tests/build/Pages 39035674047 passed.
+- Current [Mixmash PR163](https://github.com/DaveHomeAssist/mixmash/pull/163), candidate `3a0f692d75ebfb164192ab6674c57a329ba62fa7`, merged as `f48ad3e1873c6296ab1492c2c958e606e7884426`. Full premerge 39035757258 and dedicated gameplay 39035757217 passed. Full postmerge 39037840693 and dedicated gameplay 39037840695 passed.
+- [Pages 39037839692](https://github.com/DaveHomeAssist/mixmash/actions/runs/39037839692) published the current merge. Public HTML and all four assets returned 200 with SHA256 matching the reviewed package. No original game or homepage files changed in this correction; `noindex, nofollow` and unlisted status remain.
+
+### Verified behavior and next steps
+
+Dominic ran 78 source tests, the production build and 471 current Mixmash tests successfully. Chromium checks against the published route covered desktop 1440×900, portrait 375×812, landscape 667×375 and ultrawide 3440×1440. Control hierarchy, both themes, viewport fit, keyboard and emulated-touch throws passed. Local matches completed 84 throws/21 innings on three viewports; solo matches completed 24 throws/six innings on four viewports with Easy and Normal AI. No page or asset errors were observed.
+
+Replay pause/scrub/exit preserves exact match and shoe state, including during AI search and across ends. Restart cancels stale AI work. Audio produces a measurable signal, volume changes and mute work, and unavailable AudioContext degrades gracefully. Physics settle under normal time. Fallback desktop/mobile checks reverse both drawn ends, keep close view on the active stake and restore practice/retry. Existing Curling still loads in 3D and throws; both return links and the unlisted homepage were checked.
+
+Automated release gates are complete. Physical-phone, screen-reader and human listening/play acceptance remain separate and unverified. Materials and tilted/stacked adjudication remain provisional. Next: collect player feedback on the clarified Throw action and physical-device feel; address confirmed issues only. The private board registry still has no Horseshoes entry, so no board synchronization is claimed; this source record owns the next steps.

@@ -142,3 +142,8 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - User reported mistaking the green Play navigation tab for Throw. Renamed it Controls, gave tabs neutral underline selection, and moved the mobile/short viewport navigation above the control deck. Throw retains the primary accent and gains bold labeling.
 - WEB-2 mobile navigation placement uses its product usability exception: keep navigation away from the repeated throwing action and align visual order with keyboard order. No game rules, audio, replay or original Curling changes.
 - Dominic verification: 78 source tests and production build passed. Controls/Throw visual separation, light/dark, viewport fit, keyboard and emulated-touch throwing passed at 1440×900, 375×812, 667×375 and 3440×1440. Screenshots inspected. Packaged regression, CI and published verification remain release gates.
+
+2026-10-17 — Phase 3 and Throw controls release closure
+- Source PR7 and Mixmash PR163 merged; package `f48ad3e1873c6296ab1492c2c958e606e7884426` published with full pre/post CI, dedicated gameplay and Pages passing. Live artifact parity and four viewport control/solo/replay/audio checks passed on Dominic. Original Curling/homepage and noindex preserved.
+- Earlier PR159 postmerge catalog failure is superseded by the current passing checks. See docs/HORSESHOES_RELEASE.md for exact evidence.
+- Next: physical-device and human play feedback; no new feature scope inferred. Private board routing remains unavailable for Horseshoes.
