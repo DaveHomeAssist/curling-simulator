@@ -36,7 +36,7 @@ async function boot() {
       <div class="stage-status"><span id="status-pill">Ready</span><span id="flight-readout"></span></div>
       <div id="stake-flash" hidden>STAKE HIT</div><button id="camera-button">Close view</button>
       <span class="camera-help">Drag to orbit · wheel / pinch to zoom</span></section>
-    <div class="tabs" role="tablist" aria-label="Game panels"><button id="play-tab" role="tab" aria-selected="true" aria-controls="play-panel" data-panel="play">Play</button><button id="score-tab" role="tab" aria-selected="false" aria-controls="score-panel" data-panel="score" tabindex="-1">Score</button><button id="settings-tab" role="tab" aria-selected="false" aria-controls="settings-panel" data-panel="settings" tabindex="-1">Options</button></div>
+    <div class="tabs" role="tablist" aria-label="Game panels"><button id="play-tab" role="tab" aria-selected="true" aria-controls="play-panel" data-panel="play">Controls</button><button id="score-tab" role="tab" aria-selected="false" aria-controls="score-panel" data-panel="score" tabindex="-1">Score</button><button id="settings-tab" role="tab" aria-selected="false" aria-controls="settings-panel" data-panel="settings" tabindex="-1">Options</button></div>
     <section class="deck" aria-label="Game controls">
       <div class="panel" id="play-panel" role="tabpanel" aria-labelledby="play-tab">
         <div id="live-controls"><div class="sliders"><label for="aim">Aim <output id="aim-value"></output><input id="aim" type="range" min="-4" max="4" step="0.05" value="0"></label>
