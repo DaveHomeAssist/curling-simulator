@@ -162,3 +162,8 @@ Original prompt: complete all phases without asking again. execute all phases, c
 2026-10-17 — FMP menu release closure
 - Final Mixmash PR167 merge 772e2afa49747c6e32fa976e9ad8211bad10d608: full pre/post CI, dedicated gameplay and Pages passed. Live HTML/five assets match; final Menu/Controls guidance, recorded audio and return-link/original-game spot checks passed. Comprehensive prior FMP build checks remain applicable to unchanged gameplay/layout. Source PR9/10/11 are merged.
 - Next: physical-device and FMP likeness feedback. Original games and noindex preserved; private board routing gap remains. See docs/HORSESHOES_RELEASE.md for exact runs and scope.
+
+2026-10-17 — Pavilion broadcast and cinematic pass
+- Approved: independent instant replay on four existing FMP delay screens, skippable intro/tour camera pass. Brief records ECP-1.0 adapter boundary. Implementation and release verification in progress.
+- Dominic: 80 tests and Vite production build passed. Four-viewport broadcast/tour checks passed: independent next throw, menu pause, manual replay, end reversal, reset, intro skip/completion, pointer/Escape cancellation and reduced motion. Screenshots inspected; corrected overlay flicker and monitor-view return label. Exact final package/CI/live verification pending.
+- Review corrections: delayed venue load now reapplies a requested monitor view; every tour exit restores pitching mode and its button label. Added delayed asset regression and exact tour-return assertion.

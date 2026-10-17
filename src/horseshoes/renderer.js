@@ -205,9 +205,64 @@ export function createHorseshoeRenderer(container) {
   const horizon = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), new THREE.MeshLambertMaterial({ color: 0x607e47 }));
   horizon.rotation.x = -Math.PI / 2; horizon.position.y = -4; scene.add(horizon);
   let environment = 'loading', disposed = false;
+  const monitors = [];
+  let tourTime = null;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const feed = new THREE.WebGLRenderTarget(512, 288);
+  const feedScene = new THREE.Scene();
+  feedScene.background = new THREE.Color(0x244d3d);
+  addCourt(feedScene);
+  feedScene.add(new THREE.HemisphereLight(0xffffff, 0x777766, 3));
+  const feedCamera = new THREE.PerspectiveCamera(48, 16 / 9, 0.05, 80);
+  const badge = document.createElement('canvas'); badge.width = 512; badge.height = 64;
+  const badgeTexture = new THREE.CanvasTexture(badge); badgeTexture.colorSpace = THREE.SRGBColorSpace;
+  const badgeMaterial = new THREE.SpriteMaterial({ map: badgeTexture, depthTest: false, toneMapped: false });
+  const badgeSprite = new THREE.Sprite(badgeMaterial); badgeSprite.scale.set(1.35, 0.169, 1); badgeSprite.position.set(0, 0.32, -1); badgeSprite.renderOrder = 10;
+  feedCamera.add(badgeSprite); feedScene.add(feedCamera);
+  let badgeActive = null;
+  const feedShoes = new Map();
+  let feedFrame = null;
+  const screenMaterial = new THREE.MeshBasicMaterial({ map: feed.texture, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
+  function bindMonitors(venue) {
+    for (const id of ['D1 lawn delay', 'D2 lawn delay', 'D3 lawn delay', 'D4 lawn delay']) {
+      const group = venue.getObjectByName(id);
+      if (!group) continue;
+      // Pinned source fixture: 7.2 × 4.05 m demo wall, 0.25 m deep.
+      // Its bars are batched elsewhere; overlay the preserved named anchor.
+      if (!group.isGroup || !group.matrix.elements.every(Number.isFinite)) continue;
+      const screen = new THREE.Mesh(new THREE.PlaneGeometry(7.2, 4.05), screenMaterial);
+      screen.name = `${id} replay`;
+      screen.position.set(0, 0, 0.2);
+      group.add(screen); monitors.push(screen);
+    }
+  }
+  function renderFeed(frame) {
+    if (frame === feedFrame) return;
+    feedFrame = frame;
+    if (badgeActive !== Boolean(frame)) {
+      badgeActive = Boolean(frame); const ctx = badge.getContext('2d');
+      ctx.fillStyle = '#102a25'; ctx.fillRect(0, 0, 512, 64);
+      ctx.fillStyle = '#ffd58b'; ctx.font = 'bold 28px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(frame ? 'INSTANT REPLAY  •  FMP' : 'BACKYARD HORSESHOES', 256, 42); badgeTexture.needsUpdate = true;
+    }
+    for (const mesh of feedShoes.values()) mesh.visible = false;
+    const items = frame ? frame.shoes || [{ ...frame, id: 'practice', player: 0 }] : [];
+    for (const item of items) {
+      if (item.removed) continue;
+      let mesh = feedShoes.get(item.id);
+      if (!mesh) { mesh = makeShoeGroup(item.player === 1 ? 0xff9f43 : 0x55b5ff); feedShoes.set(item.id, mesh); feedScene.add(mesh); }
+      mesh.visible = true; mesh.position.copy(item.position); mesh.quaternion.copy(item.rotation);
+    }
+    const z = frame ? Math.min(COURT.stakeDistance, Math.max(0, frame.position.z)) : COURT.stakeDistance;
+    feedCamera.position.set(2.1, 1.8, z - 2.8); feedCamera.lookAt(0, 0.3, z);
+    renderer.setRenderTarget(feed); renderer.render(feedScene, feedCamera); renderer.setRenderTarget(null);
+  }
+  renderFeed(undefined);
   new THREE.ObjectLoader().load(new URL('./assets/fmp-venue.json', import.meta.url).href, (venue) => {
     if (disposed) return;
-    scene.add(venue); environment = 'fmp-lawn'; renderer.render(scene, camera);
+    bindMonitors(venue); scene.add(venue); environment = 'fmp-lawn';
+    if (cameraMode === 'monitors') applyCamera();
+    renderer.render(scene, camera);
   }, undefined, () => { environment = 'unavailable'; });
   scene.add(new THREE.HemisphereLight(0xd8f4eb, 0x1b241d, 1.9));
   const sun = new THREE.DirectionalLight(0xffe3b0, 3.2);
@@ -258,7 +313,14 @@ export function createHorseshoeRenderer(container) {
   const currentRotation = new THREE.Quaternion();
 
   function applyCamera() {
-    const pose = CAMERA_POSES[cameraMode];
+    if (cameraMode === 'monitors' && monitors.length) {
+      scene.updateMatrixWorld(true);
+      const screen = monitors[0], center = screen.getWorldPosition(new THREE.Vector3());
+      const normal = new THREE.Vector3(0, 0, 1).transformDirection(screen.matrixWorld);
+      camera.position.copy(center).addScaledVector(normal, 8);
+      orbit.target.copy(center); camera.lookAt(center); orbit.update(); return;
+    }
+    const pose = CAMERA_POSES[cameraMode] || CAMERA_POSES.pitching;
     camera.position.fromArray(pose.position);
     orbit.target.fromArray(pose.target);
     if (end) {
@@ -271,6 +333,9 @@ export function createHorseshoeRenderer(container) {
     orbit.update();
   }
   applyCamera();
+  function stopTour() { if (tourTime === null) return; tourTime = null; cameraMode = 'pitching'; orbit.enabled = true; applyCamera(); }
+  renderer.domElement.addEventListener('pointerdown', stopTour);
+  renderer.domElement.addEventListener('wheel', stopTour, { passive: true });
 
   function resize() {
     const { width, height } = container.getBoundingClientRect();
@@ -384,6 +449,23 @@ export function createHorseshoeRenderer(container) {
 
   return {
     kind: 'three',
+    broadcast(frame) { renderFeed(frame); },
+    getBroadcast: () => ({ screens: monitors.length, frame: Boolean(feedFrame), position: feedFrame?.position }),
+    startTour() { if (reducedMotion.matches) return false; tourTime = 0; orbit.enabled = false; return true; },
+    stopTour,
+    getTour: () => ({ active: tourTime !== null, time: tourTime || 0, reducedMotion: reducedMotion.matches }),
+    stepTour(dt) {
+      if (tourTime === null) return;
+      if (reducedMotion.matches || (tourTime += dt) >= 6) { stopTour(); return; }
+      // Sweeping establishment, lawn approach, then settle at the pitching line.
+      const points = [[-30, 18, 5], [18, 12, 24], [5, 5, -5], [0, 2.25, -3.15]];
+      const targets = [[0, 5, 70], [0, 3, 38], [0, 0.6, 11.2], [0, 0.35, 11.2]];
+      const segment = Math.min(2, Math.floor(tourTime / 2)), t = tourTime / 2 - segment, ease = t * t * (3 - 2 * t);
+      camera.position.fromArray(points[segment]).lerp(new THREE.Vector3(...points[segment + 1]), ease);
+      orbit.target.fromArray(targets[segment]).lerp(new THREE.Vector3(...targets[segment + 1]), ease);
+      if (end) { camera.position.x *= -1; camera.position.z = COURT.stakeDistance - camera.position.z; orbit.target.x *= -1; orbit.target.z = COURT.stakeDistance - orbit.target.z; }
+      camera.lookAt(orbit.target);
+    },
     setEnd(value) {
       end = value;
       scene.rotation.y = end ? Math.PI : 0;
@@ -397,7 +479,8 @@ export function createHorseshoeRenderer(container) {
     resize,
     render,
     setCameraMode(mode) {
-      cameraMode = mode in CAMERA_POSES ? mode : 'pitching';
+      stopTour();
+      cameraMode = mode in CAMERA_POSES || mode === 'monitors' ? mode : 'pitching';
       applyCamera();
     },
     getCameraMode: () => cameraMode,
@@ -409,6 +492,8 @@ export function createHorseshoeRenderer(container) {
     getDiagnostics: () => diagnostics,
     dispose() {
       disposed = true;
+      feed.dispose(); screenMaterial.dispose(); badgeTexture.dispose();
+      feedScene.traverse(o => { o.geometry?.dispose(); if (o.material) o.material.dispose(); });
       orbit.dispose();
       renderer.dispose();
       renderer.domElement.remove();
