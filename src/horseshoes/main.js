@@ -272,7 +272,7 @@ async function boot() {
         : mode !== 'practice' && m.result
           ? m.winner === null
             ? 'Inspect Score, then continue from Play'
-            : 'Match complete · restart from Options'
+            : 'Match complete · restart from Menu'
           : 'Aim, choose strength, throw';
     if (state.stakeHit && !lastHit) {
       $('#stake-flash').hidden = false;

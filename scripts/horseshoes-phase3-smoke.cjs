@@ -11,6 +11,34 @@ fs.mkdirSync(output, { recursive: true });
   try {
     for (const [width, height, touch] of [[1440,900,false],[375,812,true],[667,375,true],[3440,1440,false]]) {
       const context = await browser.newContext({ viewport: { width, height }, hasTouch: touch, isMobile: touch });
+      await context.addInitScript(() => {
+        const NativeAudio = window.AudioContext;
+        window.AudioContext = class extends NativeAudio {
+          constructor(...args) { super(...args); window.__audioTestContext = this; }
+          createAnalyser() { const node = super.createAnalyser(); this.__testAnalyser = node; return node; }
+        };
+        window.__startAudioCapture = () => {
+          const ctx = window.__audioTestContext, destination = ctx.createMediaStreamDestination();
+          ctx.__testAnalyser.connect(destination);
+          const recorder = new MediaRecorder(destination.stream), chunks = [];
+          recorder.ondataavailable = e => chunks.push(e.data);
+          window.__finishAudioCapture = () => new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error('Audio capture timed out')), 15000);
+            recorder.onerror = e => { clearTimeout(timeout); reject(e.error); };
+            recorder.onstop = async () => {
+              try {
+              const buffer = await ctx.decodeAudioData(await new Blob(chunks).arrayBuffer());
+              let sum = 0, count = 0;
+              for (let c = 0; c < buffer.numberOfChannels; c++) for (const x of buffer.getChannelData(c)) { sum += x * x; count++; }
+              ctx.__testAnalyser.disconnect(destination); destination.stream.getTracks().forEach(t => t.stop());
+              clearTimeout(timeout); resolve(Math.sqrt(sum / count));
+              } catch (error) { clearTimeout(timeout); reject(error); }
+            };
+            recorder.stop();
+          });
+          recorder.start();
+        };
+      });
       const page = await context.newPage(); const errors = [];
       page.on('pageerror', (e) => errors.push(e.message));
       page.on('response', (r) => { if (r.status() >= 400) errors.push(`${r.status()} ${r.url()}`); });
@@ -33,6 +61,8 @@ fs.mkdirSync(output, { recursive: true });
       }
       await press('#settings-tab'); await press('#sound-button');
       await range('#volume', 35); assert.equal((await state()).audio.volume, 0.35);
+      // Record actual output off the main thread so a slow raster cannot miss a short impact.
+      await page.evaluate(() => __startAudioCapture());
       await press('#play-tab'); await press('#throw-button');
       // Natural-time throw exercises real audio scheduling and rest detection.
       let energy = 0;
@@ -41,6 +71,7 @@ fs.mkdirSync(output, { recursive: true });
         if (s.shoe.status === 'resting') break;
       }
       assert.equal((await state()).shoe.status, 'resting');
+      energy = await page.evaluate(() => __finishAudioCapture());
       assert.ok((await state()).audio.played > 0); assert.ok(energy > 0);
       await page.evaluate(() => __horseshoes.stop());
       const stable = await state();
@@ -79,6 +110,7 @@ fs.mkdirSync(output, { recursive: true });
       }
       const complete = await state(); assert.equal(complete.match.phase, 'complete'); assert.equal(complete.match.winner, 1);
       assert.ok(complete.match.scores[1] >= 21); assert.ok(searches.length >= 2);
+      assert.match(await page.locator('#flight-readout').textContent(), /restart from Menu/);
       await page.screenshot({ path: `${output}/${width}-solo-complete.png` });
       await press('#settings-tab'); await press('#restart-button');
       assert.equal((await state()).replay.available, false); assert.deepEqual((await state()).match.scores, [0,0]);
