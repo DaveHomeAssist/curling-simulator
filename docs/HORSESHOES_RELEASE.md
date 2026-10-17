@@ -33,7 +33,7 @@ Physics checks cover compound shoe colliders, ringers, six-inch distance, cancel
 
 ### Remaining acceptance and next steps
 
-Physical-phone, screen-reader and human play acceptance have not been supplied. Touch checks are browser emulation. Materials and tilted/stacked geometric adjudication remain provisional, not tournament certification. Next: play on a physical phone and desktop, collect throw-feel and scoring feedback, and address confirmed defects. Phase 3 AI, audio and replay are deferred.
+Physical-phone, screen-reader and human play acceptance have not been supplied. Touch checks are browser emulation. Materials and tilted/stacked geometric adjudication remain provisional, not tournament certification. Next: play on a physical phone and desktop, collect throw-feel and scoring feedback, and address confirmed defects. Phase 3 is now authorized and tracked below.
 
 No Horseshoes record exists in the private cross-project board registry; board synchronization is pending routing rather than reported current. This public-safe document owns the project's current next steps.
 
@@ -43,3 +43,11 @@ No Horseshoes record exists in the private cross-project board registry; board s
 - Build the Mixmash artifact using `npx vite build --base /horseshoes/`; package `dist/horseshoes.html` as `/horseshoes/index.html` plus only its referenced JS/CSS chunks.
 - With the packaged site served: `HORSESHOES_BASE_URL=http://127.0.0.1:4178/horseshoes/ node scripts/horseshoes-smoke.cjs`. Requires Playwright on the runner, optionally supplied through `PLAYWRIGHT_MODULE`.
 - Browser smoke completes a real 84-throw match at each viewport, tests practice, orbit/zoom, themes, keyboard and emulated touch. `advanceTime` advances the same Rapier step, never inserts scores.
+
+## Phase 3 — AI, audio and replay
+
+Approved October 17, 2026; see HORSESHOES_PHASE3_BRIEF.md. Implemented worker-based solo opponent with Easy/Normal candidate budgets, contact-driven procedural audio with mute/volume, last/best transform replay with pause/scrub/exit, and concise throw feedback. Local matches/practice and original game boundaries remain.
+
+Validation on the Linux runner: 76 source tests and production build passed. Clone parity includes an occupied court and removed foul shoe; the selected candidate produces the same result when launched in the live simulator. Four viewport solo matches completed24 throws/six innings at0–22. Maximum observed candidate search767ms Normal /364ms Easy, with main-thread animation continuing. Replay leaves match/physics state unchanged; audio produced a measurable signal and mute silenced it. This does not establish human listening or physical-device acceptance.
+
+Publication and full postmerge evidence remain pending. Next: complete source and isolated Mixmash delivery, then verify the published build and preserve the physical-device feedback step.

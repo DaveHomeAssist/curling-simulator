@@ -1,4 +1,4 @@
-> Historical planning record recovered from the original development conversation. Phase 1 instructions below applied to its initial delivery only. The current October 16–17 instruction authorizes Phase 2 implementation and the repository merge/deployment workflow; see HORSESHOES_PHASE2_BRIEF.md.
+> Historical planning record recovered from the original development conversation. Phase 1 instructions below applied to its initial delivery only. The current October 17 instruction authorizes Phase 3 implementation and the repository merge/deployment workflow; see HORSESHOES_PHASE3_BRIEF.md.
 
 # Horseshoes Simulator: Three-Phase Prototype Plan and Execution Prompts
 **Prepared:** October 15, 2026
