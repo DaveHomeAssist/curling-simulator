@@ -12,6 +12,7 @@ import { createPracticePhysics } from './physics.js';
 import { createMatch } from './match.js';
 import { createHorseshoeRenderer } from './renderer.js';
 import { createHorseshoeRenderer2D } from './renderer2d.js';
+import { createBroadcast } from './broadcast.js';
 import { createReplay } from './replay.js';
 import { createImpactAudio } from './audio.js';
 import { classifyShoe } from './scoring.js';
@@ -35,7 +36,7 @@ async function boot() {
     <section class="stage-wrap" aria-label="Horseshoes court"><div id="horseshoe-stage"></div>
       <div class="stage-status"><span id="status-pill">Ready</span><span id="flight-readout"></span></div>
       <div id="stake-flash" hidden>STAKE HIT</div><button id="camera-button">Close view</button>
-      <span class="camera-help">Drag to orbit · wheel / pinch to zoom</span></section>
+      <div id="tour-title" hidden><span>LIVE FROM THE LAWN</span><strong>Backyard Horseshoes</strong><small>FMP Pavilion</small></div><button id="skip-tour" hidden>Skip intro</button><span class="camera-help">Drag to orbit · wheel / pinch to zoom</span></section>
     <div class="tabs" role="tablist" aria-label="Game panels"><button id="play-tab" role="tab" aria-selected="true" aria-controls="play-panel" data-panel="play">Controls</button><button id="score-tab" role="tab" aria-selected="false" aria-controls="score-panel" data-panel="score" tabindex="-1">Score</button></div>
     <section class="deck" aria-label="Game controls">
       <div class="panel" id="play-panel" role="tabpanel" aria-labelledby="play-tab">
@@ -55,7 +56,7 @@ async function boot() {
       <div class="panel results" id="score-panel" role="tabpanel" tabindex="0" aria-labelledby="score-tab" hidden><h2>Inning result</h2><p id="result-copy">Throw all four shoes to score the inning.</p><ol id="shoe-results"></ol><h2>Match history</h2><ol id="history"></ol></div>
     </section>
 <dialog id="game-menu" aria-labelledby="menu-title"><div class="menu-heading"><div><span class="eyebrow">BACKYARD HORSESHOES</span><h2 id="menu-title">On the lawn at FMP</h2><p id="menu-caption">Pick a game, settle in, take your shot.</p></div><button id="menu-resume" class="menu-resume">Play</button></div><div id="settings-panel" class="menu-body">        <section class="menu-group"><h3>New game</h3><label for="mode">Mode for a new game</label><select id="mode"><option value="solo">Solo versus computer</option><option value="match">Local two-player match</option><option value="practice">Practice</option></select>
-        <label for="difficulty">Computer difficulty</label><select id="difficulty"><option value="normal">Normal</option><option value="easy">Easy</option></select></section><section class="menu-group"><h3>Sound</h3><button id="sound-button" aria-pressed="false">Sound: off</button><label for="volume">Volume<input id="volume" type="range" min="0" max="100" value="50"></label></section><section class="menu-group"><h3>Display</h3><button id="menu-theme-button">Switch theme</button><button id="fullscreen-button">Fullscreen</button><button id="debug-button" aria-pressed="false">Physics guides: off</button>
+        <label for="difficulty">Computer difficulty</label><select id="difficulty"><option value="normal">Normal</option><option value="easy">Easy</option></select></section><section class="menu-group"><h3>Sound</h3><button id="sound-button" aria-pressed="false">Sound: off</button><label for="volume">Volume<input id="volume" type="range" min="0" max="100" value="50"></label></section><section class="menu-group"><h3>Display</h3><button id="menu-theme-button">Switch theme</button><button id="fullscreen-button">Fullscreen</button><button id="tour-button">Tour venue</button><button id="monitors-button">View delay screens</button><button id="debug-button" aria-pressed="false">Physics guides: off</button>
         </section><details class="menu-help"><summary>How to play & practice</summary><div id="preset-row"><span>Practice presets</span>${Object.entries(
           LAUNCH_PRESETS,
         )
@@ -75,6 +76,7 @@ async function boot() {
   });
   const match = createMatch();
   const replay = createReplay();
+  const broadcast = createBroadcast();
   const audio = createImpactAudio();
   let difficulty = 'normal', worker, aiTimeout, aiBusy = false, aiGeneration = 0, aiMetrics = null, aiError = '';
   let recordSteps = 0, feedback = '';
@@ -84,7 +86,7 @@ async function boot() {
   const captureFrame = () => ({ ...physics.snapshot(), shoes: mode === 'practice' ? undefined : physics.getShoes() });
   function cancelAI() { clearTimeout(aiTimeout); aiGeneration++; worker?.terminate(); worker = null; aiBusy = false; }
   function scheduleAI() {
-    if (menu.open || !aiTurn() || aiBusy || replay.snapshot().active || document.hidden || aiError) return;
+    if (renderer?.getTour?.().active || menu.open || !aiTurn() || aiBusy || replay.snapshot().active || document.hidden || aiError) return;
     aiBusy = true;
     const id = ++aiGeneration;
     const fail = () => { if (id !== aiGeneration) return; cancelAI(); aiError = 'Computer unavailable. Restart to retry or choose local play.'; announce(aiError); };
@@ -109,6 +111,7 @@ async function boot() {
     const result = classifyShoe(active);
     feedback = result.foul ? 'Foul — outside ground contact' : result.ringer ? 'Ringer!' : result.distance <= 0.1524 ? 'Within six inches' : `${state.position.z < COURT.stakeDistance ? 'Short' : 'Long'}${Math.abs(state.position.x) > 0.15 ? state.position.x < 0 ? ' · left' : ' · right' : ''} of the stake`;
     replay.finish(captureFrame(), result.foul ? -100 : result.ringer ? 10 : -result.distance);
+    broadcast.play(replay.lastClip());
   }
   let renderer;
   try {
@@ -141,7 +144,9 @@ async function boot() {
     menu.showModal(); $('#menu-resume').focus();
   }
   function closeMenu() {
-    hasStarted = true; menu.close(); lastTime = performance.now(); runner.reset();
+    const firstPlay = !hasStarted;
+    hasStarted = true; menu.close();
+    if (firstPlay) renderer.startTour?.(); lastTime = performance.now(); runner.reset();
     audio.suppress(document.hidden || menu.open || replay.snapshot().active);
     $('#settings-tab').focus();
   }
@@ -173,10 +178,13 @@ async function boot() {
   function setCamera(mode) {
     renderer.setCameraMode(mode);
     $('#camera-button').textContent =
-      mode === 'close' ? 'Pitching view' : 'Close view';
+      mode !== 'pitching' ? 'Pitching view' : 'Close view';
   }
   function tick() {
     if (menu.open) return;
+    renderer.stepTour?.(FIXED_STEP);
+    if (renderer.getTour?.().active) return;
+    broadcast.step(FIXED_STEP);
     if (replay.snapshot().active) { replay.step(FIXED_STEP); return; }
     const wasFlying = physics.snapshot().status === 'flying';
     physics.step();
@@ -231,6 +239,9 @@ async function boot() {
       mode !== 'practice' && canThrow
         ? { previous: ready(), current: ready() }
         : physics.getInterpolationPair();
+    renderer.broadcast?.(broadcast.frame());
+    $('#skip-tour').hidden = !renderer.getTour?.().active;
+    $('#tour-title').hidden = $('#skip-tour').hidden;
     const playbackFrame = replay.frame();
     renderer.render(playbackFrame ? { previous: playbackFrame, current: playbackFrame } : pair, playbackFrame ? 1 : alpha, playbackFrame || view, controls, playbackFrame ? null : physics.world);
     $('#player-two-label').textContent = mode === 'solo' ? 'Computer' : 'Player 2';
@@ -304,6 +315,8 @@ async function boot() {
   }
   function launch(chosen = controls, computer = false) {
     if (menu.open) return false;
+    renderer.stopTour?.();
+    if (renderer.getCameraMode() === 'monitors') setCamera('pitching');
     if (chosen instanceof Event) chosen = controls;
     if (replay.snapshot().active || (aiTurn() && !computer)) return false;
     audio.unlock();
@@ -332,7 +345,7 @@ async function boot() {
     return true;
   }
   function restart() {
-    cancelAI(); aiError = ''; replay.clear(); audio.reset(); audio.suppress(document.hidden || menu.open); feedback = '';
+    cancelAI(); aiError = ''; replay.clear(); broadcast.clear(); renderer.stopTour?.(); audio.reset(); audio.suppress(document.hidden || menu.open); feedback = '';
     match.restart();
     physics.dispose();
     physics = createPracticePhysics(RAPIER, { retainShoes: mode !== 'practice' });
@@ -390,6 +403,9 @@ async function boot() {
         updateControls();
       }
     };
+  $('#monitors-button').onclick = () => { closeMenu(); setCamera('monitors'); render(); };
+  $('#skip-tour').onclick = () => { renderer.stopTour?.(); render(); $('#throw-button').focus(); };
+  $('#tour-button').onclick = () => { closeMenu(); renderer.startTour?.(); render(); if (renderer.getTour?.().active) $('#skip-tour').focus(); };
   $('#throw-button').onclick = launch;
   $('#retry-button').onclick = retry;
   $('#next-button').onclick = nextInning;
@@ -413,7 +429,7 @@ async function boot() {
   $('#replay-position').oninput = (e) => { replay.seek(Number(e.target.value) / 100); render(); };
   $('#replay-exit').onclick = () => { replay.exit(); renderer.setEnd?.(match.snapshot().end); audio.suppress(document.hidden); runner.reset(); render(); };
   $('#camera-button').onclick = () =>
-    setCamera(renderer.getCameraMode() === 'close' ? 'pitching' : 'close');
+    setCamera(renderer.getCameraMode() === 'pitching' ? 'close' : 'pitching');
   $('#debug-button').onclick = () => {
     const value = !renderer.getDiagnostics();
     renderer.setDiagnostics(value);
@@ -469,6 +485,7 @@ async function boot() {
     };
   }
   window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !menu.open && renderer.getTour?.().active) { e.preventDefault(); renderer.stopTour(); render(); return; }
     if (
       menu.open ||
       e.defaultPrevented ||
@@ -539,6 +556,8 @@ async function boot() {
       diagnostics: renderer.getDiagnostics(),
       ai: { busy: aiBusy, difficulty, error: aiError, metrics: aiMetrics },
       audio: audio.snapshot(),
+      broadcast: { ...broadcast.snapshot(), ...renderer.getBroadcast?.() },
+      tour: renderer.getTour?.() || { active: false },
       replay: { ...replay.snapshot(), displayed: replay.frame() },
       feedback,
       shoe: physics.snapshot(),
@@ -561,6 +580,8 @@ async function boot() {
       cancelAnimationFrame(rafId);
     },
   };
+  $('#tour-button').disabled = renderer.kind !== 'three';
+  $('#monitors-button').disabled = renderer.kind !== 'three';
   updateControls();
   renderer.resize();
   render();

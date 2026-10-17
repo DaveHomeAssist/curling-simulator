@@ -101,3 +101,11 @@ An instantaneous audio analyser probe could miss short sounds during software re
 Original games, the Mixmash homepage and `noindex, nofollow` remain preserved. Horseshoes is still unlisted. Browser touch emulation and measured audio output do not establish physical-phone, screen-reader, human listening/play or FMP likeness acceptance.
 
 Next: collect physical-device and venue-likeness feedback and address confirmed issues. No new feature scope is inferred. No Horseshoes record exists in the private cross-project board registry; this public release record owns next steps and the board routing gap remains explicit.
+
+## Pavilion instant replay and intro — October 17
+
+Approved: independent instant replay on the four schematic FMP lawn delay screens, with the main view available for the next throw, plus a short theatrical intro and optional venue tour. See `HORSESHOES_BROADCAST_BRIEF.md` for ECP-1.0 mapping and acceptance.
+
+Implemented: bounded, silent 512×288 feed with recorded shoes and a replay banner. The feed stops at its final frame, never restores physics and remains independent of manual replay. Menu/hidden page pause the clock; new games clear it. The six-second opening pass is skippable with its button, Escape, camera interaction or throwing; reduced motion avoids the pass. Menu offers Tour venue and View delay screens; throwing from the latter returns to pitching view. Original games, noindex and the existing match rules remain unchanged.
+
+Dominic verification: 80 source tests/build and four-viewport focused browser checks passed. Complete exact-package regression, CI, merge, deployment and public verification remain pending. Next: finish those release gates, then collect physical-device and cinematic/venue feedback. Private board routing remains unavailable for Horseshoes.

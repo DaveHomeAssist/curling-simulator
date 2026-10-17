@@ -14,6 +14,7 @@ export function createReplay() {
       if (!best || rank > best.rank) best = last;
       recording = null;
     },
+    lastClip: () => last ? copy(last) : null,
     start(which = 'last') {
       const clip = which === 'best' ? best : last;
       if (!clip) return false;

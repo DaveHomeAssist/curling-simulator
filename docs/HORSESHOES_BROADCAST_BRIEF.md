@@ -1,0 +1,11 @@
+# Pavilion replay and camera pass
+
+Approved October 17: instant replays on the FMP pavilion delay monitors, main view ready for the next throw, theatrical intro/cutscene camera pass, test/merge/live delivery.
+
+The four existing named lawn delay surfaces share one bounded, silent offscreen replay of the most recently settled throw. Recorded transforms are view-only: no physics, scoring, turn, AI or manual replay state is restored or paused by this feed. The next throw can begin during playback. New games clear the feed; menu/hidden page pause animation. The feed holds its last frame until the next result, avoiding endless distracting motion.
+
+First play offers a short pavilion-to-court camera pass, with visible Skip and immediate cancellation on throwing or camera interaction. Reduced motion skips automatic movement. Tour venue in the menu repeats the pass deliberately. Camera control and the normal pitching view return at completion. No cutscene steals the view after a throw.
+
+ECP-1.0 revision 1.0: source-owned schematic venue exported from system-by-dave revision18a1a4e; Horseshoes is the sole changed consumer. Existing D1–D4 lawn delay group names are the explicit adapter IDs. Geometry is metres, source right/up/downstage axes transformed by the existing venue root; screen fronts use source +z. The pinned source uses 7.2 × 4.05 m demo faces and 0.25 m depth. Colour bars are batched; attach a front overlay at z=0.2 (small anti-flicker offset) to each preserved named group. Validate group type and finite transform; unknown/missing anchors remain unchanged. No shared asset/schema, original venue, physical control or hardware output changes. Display size/placement remain schematic, not verified installed inventory.
+
+Acceptance: four surfaces show moving recorded shoes and hold the final frame; gameplay continues concurrently, across innings/ends and AI turns. Menu/visibility pause; restart clears; manual replay remains independent. Intro completion/skip, pointer cancellation, reduced motion and fallback work. Verify desktop, phone, short landscape and ultrawide fit, keyboard focus, orbit/zoom, original links/games and noindex. Test/build on remote runner; exact candidate/postmerge checks, Pages and public behavior required. Physical phone and venue likeness remain human acceptance.
