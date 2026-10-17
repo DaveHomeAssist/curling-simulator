@@ -151,3 +151,6 @@ Original prompt: complete all phases without asking again. execute all phases, c
 2026-10-17 — FMP lawn and menu feedback
 - New scope: reuse the FMP camera simulator venue scene, distinguish control families by color, and provide a paused game menu/settings. See docs/HORSESHOES_FMP_MENU_BRIEF.md.
 - Source venue found under system-by-dave/apps/fmp-camera-sim; no changes to that owning project. No camera equipment or network records will be imported.
+
+- FMP menu validation: 78 source tests/build and 471 Mixmash tests passed on Dominic. Three local 84-throw matches, four solo 24-throw matches, menu pause/focus/new-game controls, both themes, fallback, camera and original-game checks passed. Ultrawide audio waveform sampling uses a standard desktop raster before restoring the full viewport for gameplay.
+- Source PR9 merged as 82b10e1a1351e0cb7f5c6fb89b27bea07dc2aa25; source CI39044035025 and postmerge39044165414 passed. Mixmash PR166 merged as b95276f707c29d6efd77bf366fb6a9c8ddb3d41d after full CI39045017950 and dedicated39045017872 passed. Pages39048751424 passed; live HTML and five assets match. Published gameplay and full postmerge CI remain pending.
