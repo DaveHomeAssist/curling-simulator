@@ -123,3 +123,10 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - Recovered readable original Phase 1 source from authored changes; source recovery/build and Phase 2 acceptance pending.
 - Phase 2: 71 tests and production build pass on Dominic. Complete 84-throw matches pass at 1440×900, 375×812 and 667×375 with zero page/request failures. Both themes, orbit/zoom, keyboard native controls, practice presets and immediate retry verified. Source PR and Mixmash publication pending.
 - Phase 2 source PR2 and Mixmash PR156 merged; live full matches, normal-time settling, wheel zoom and native return navigation passed. Keyboard-only follow-up reproduced Tab skipping score history. Correcting panel focus/order and scroll-key routing; added a regression that fails on the first published version.
+
+## Horseshoes Phase 2 release closure — October 17, 2026
+- Local two-player match and keyboard history correction are merged and published at https://mixmash.games/horseshoes/. Source PR2/3 and Mixmash PR156/157 are complete.
+- Current Mixmash merge: 5949962515fd81ea16d3670bc022913efbd18374. Full premerge CI 39004709635, dedicated 39004709617, full postmerge 39006810917, dedicated 39006810831 and Pages 39006810336 passed. Live HTML/assets match the packaged build.
+- 71 source tests and 456 Mixmash tests passed. Published full matches completed 84 throws at each of three viewports. Mouse/emulated-touch controls, native keyboard/history scrolling, orbit/zoom, practice/retry, stable normal-time physics, scoring, end reversal, restart and both return links passed on Dominic.
+- Original Curling modules, Mixmash homepage and provisional noindex/nofollow restrictions preserved. Physical-phone, screen-reader and human play acceptance remain unverified.
+- Next: physical-device play feedback; Phase 3 deferred. No Horseshoes entry exists in the cross-project board registry; docs/HORSESHOES_RELEASE.md owns current next steps and records the projection gap.
