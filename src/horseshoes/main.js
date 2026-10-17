@@ -271,7 +271,7 @@ async function boot() {
         ? `${state.elapsed.toFixed(1)} s`
         : mode !== 'practice' && m.result
           ? m.winner === null
-            ? 'Inspect Score, then continue from Play'
+            ? 'Inspect Score, then continue from Controls'
             : 'Match complete · restart from Menu'
           : 'Aim, choose strength, throw';
     if (state.stakeHit && !lastHit) {
