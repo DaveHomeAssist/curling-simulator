@@ -253,14 +253,15 @@ export function createHorseshoeRenderer(container) {
       if (!mesh) { mesh = makeShoeGroup(item.player === 1 ? 0xff9f43 : 0x55b5ff); feedShoes.set(item.id, mesh); feedScene.add(mesh); }
       mesh.visible = true; mesh.position.copy(item.position); mesh.quaternion.copy(item.rotation);
     }
-    const z = frame ? Math.min(COURT.stakeDistance, Math.max(0, frame.position.z)) : COURT.stakeDistance;
-    feedCamera.position.set(2.1, 1.8, z - 2.8); feedCamera.lookAt(0, 0.3, z);
+    const z = frame ? frame.position.z : COURT.stakeDistance;
+    const y = Math.max(0.3, frame?.position.y || 0), x = frame?.position.x || 0;
+    feedCamera.position.set(x + 2.1, y + 1.5, z - 2.8); feedCamera.lookAt(x, y, z);
     renderer.setRenderTarget(feed); renderer.render(feedScene, feedCamera); renderer.setRenderTarget(null);
   }
   renderFeed(undefined);
   new THREE.ObjectLoader().load(new URL('./assets/fmp-venue.json', import.meta.url).href, (venue) => {
     if (disposed) return;
-    bindMonitors(venue); scene.add(venue); environment = 'fmp-lawn';
+    bindMonitors(venue); scene.add(venue); environment = monitors.length === 4 ? 'fmp-lawn' : 'unsupported';
     if (cameraMode === 'monitors') applyCamera();
     renderer.render(scene, camera);
   }, undefined, () => { environment = 'unavailable'; });
@@ -451,7 +452,7 @@ export function createHorseshoeRenderer(container) {
     kind: 'three',
     broadcast(frame) { renderFeed(frame); },
     getBroadcast: () => ({ screens: monitors.length, frame: Boolean(feedFrame), position: feedFrame?.position }),
-    startTour() { if (reducedMotion.matches) return false; tourTime = 0; orbit.enabled = false; return true; },
+    startTour() { if (environment !== 'fmp-lawn' || reducedMotion.matches) return false; tourTime = 0; orbit.enabled = false; return true; },
     stopTour,
     getTour: () => ({ active: tourTime !== null, time: tourTime || 0, reducedMotion: reducedMotion.matches }),
     stepTour(dt) {
@@ -480,7 +481,7 @@ export function createHorseshoeRenderer(container) {
     render,
     setCameraMode(mode) {
       stopTour();
-      cameraMode = mode in CAMERA_POSES || mode === 'monitors' ? mode : 'pitching';
+      cameraMode = mode in CAMERA_POSES || (mode === 'monitors' && environment === 'fmp-lawn') ? mode : 'pitching';
       applyCamera();
     },
     getCameraMode: () => cameraMode,
