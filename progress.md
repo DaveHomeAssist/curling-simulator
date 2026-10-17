@@ -156,3 +156,5 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - Source PR9 merged as 82b10e1a1351e0cb7f5c6fb89b27bea07dc2aa25; source CI39044035025 and postmerge39044165414 passed. Mixmash PR166 merged as b95276f707c29d6efd77bf366fb6a9c8ddb3d41d after full CI39045017950 and dedicated39045017872 passed. Pages39048751424 passed; live HTML and five assets match. Published gameplay and full postmerge CI remain pending.
 
 - Live verification reproduced an instantaneous waveform-probe miss on ultrawide despite played events; reducing raster size was insufficient. Replaced the source probe with MediaRecorder capture of the analyser output and decoded RMS, retaining nonzero output assertions at the original viewport. Live ultrawide recorded RMS0.00035269; remaining updated suite checks pending. Mixmash test-only PR167 owns the identical harness update; production assets remain unchanged.
+
+- Live winning-screen visual review found stale “restart from Options” guidance. Updated it to Menu and added a completion-screen assertion; no gameplay behavior changes.
