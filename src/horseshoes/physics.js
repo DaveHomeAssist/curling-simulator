@@ -22,7 +22,8 @@ function createMaterialCollider(RAPIER, descriptor, material) {
 export function createPracticePhysics(RAPIER, options = {}) {
   const includeCourt = options.includeCourt ?? true;
   const includeStake = options.includeStake ?? true;
-  const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+  const saved = options.saved;
+  const world = saved ? RAPIER.World.restoreSnapshot(saved.bytes) : new RAPIER.World({ x: 0, y: -9.81, z: 0 });
   world.timestep = FIXED_STEP;
   world.numSolverIterations = 8;
   world.numInternalPgsIterations = 2;
@@ -45,13 +46,15 @@ export function createPracticePhysics(RAPIER, options = {}) {
   let stakeHit = false;
   let groundContact = false;
   let status = 'ready';
+  let impacts = [];
+  let impactSpeeds = new Map();
   let previous = {
     position: { x: 0, y: COURT.releaseHeight, z: 0 },
     rotation: IDENTITY,
   };
   let current = structuredClone(previous);
 
-  if (includeCourt) {
+  if (includeCourt && !saved) {
     // Separate outside ground from the pit footprint: a full underlying slab
     // can report CCD contacts beneath the pit and falsely mark a fair shoe foul.
     const pitFront = COURT.stakeDistance - COURT.pitLength / 2;
@@ -97,7 +100,7 @@ export function createPracticePhysics(RAPIER, options = {}) {
     handles.pit.add(world.createCollider(pit).handle);
   }
 
-  if (includeStake) {
+  if (includeStake && !saved) {
     const lean = COURT.stakeLean;
     const stakeBody = world.createRigidBody(
       RAPIER.RigidBodyDesc.fixed()
@@ -129,6 +132,7 @@ export function createPracticePhysics(RAPIER, options = {}) {
   }
 
   function spawnShoe(command) {
+    impacts = [];
     if (!retainShoes) removeShoe();
     else {
       shoeBody = undefined;
@@ -232,6 +236,10 @@ export function createPracticePhysics(RAPIER, options = {}) {
     }
     const shoeInvolved = handles.shoe.has(first) || handles.shoe.has(second);
     if (!shoeInvolved) return;
+    const type = handles.stake.has(first) || handles.stake.has(second) ? 'stake'
+      : handles.shoe.has(first) && handles.shoe.has(second) ? 'shoe' : 'ground';
+    const speed = Math.max(impactSpeeds.get(first) || 0, impactSpeeds.get(second) || 0);
+    if (speed > 0.35) impacts.push({ type, speed, time: elapsed });
     if (handles.stake.has(first) || handles.stake.has(second)) stakeHit = true;
     if (
       handles.ground.has(first) ||
@@ -245,6 +253,11 @@ export function createPracticePhysics(RAPIER, options = {}) {
   function step() {
     if (!shoeBody?.isValid() || status !== 'flying') return;
     previous = structuredClone(current);
+    impactSpeeds = new Map();
+    for (const handle of handles.shoe) {
+      const body = world.getCollider(handle)?.parent();
+      if (body) { const v = body.linvel(); impactSpeeds.set(handle, Math.hypot(v.x, v.y, v.z)); }
+    }
     world.step(eventQueue);
     eventQueue.drainCollisionEvents(classifyCollision);
     current = readTransform();
@@ -309,6 +322,7 @@ export function createPracticePhysics(RAPIER, options = {}) {
   }
 
   function retry(transform = previous) {
+    impacts = [];
     if (retainShoes) {
       for (const record of retained)
         if (!record.removed && record.body.isValid())
@@ -352,7 +366,36 @@ export function createPracticePhysics(RAPIER, options = {}) {
     };
   }
 
+  // Rapier snapshots retain contact manifolds, velocities, sleeping and CCD state.
+  // Custom gameplay flags live beside the bytes and must travel with the clone.
+  if (saved) {
+    for (const key of Object.keys(handles)) handles[key] = new Set(saved.handles[key]);
+    for (const record of saved.records) retained.push({ ...record,
+      body: record.removed ? undefined : world.getRigidBody(record.bodyHandle),
+      colliders: record.removed ? [] : record.colliderHandles.map((h) => world.getCollider(h)),
+    });
+    shoeBody = saved.shoeHandle === null ? undefined : world.getRigidBody(saved.shoeHandle);
+    shoeColliders = saved.shoeColliders.map((h) => world.getCollider(h)).filter(Boolean);
+    activeRecord = retained.find((r) => r.id === saved.activeId);
+    ({ elapsed, quietTime, stakeHit, groundContact, status, previous, current } = structuredClone(saved.state));
+  }
+  function exportState() {
+    return {
+      bytes: world.takeSnapshot(), retainShoes,
+      handles: Object.fromEntries(Object.entries(handles).map(([k, v]) => [k, [...v]])),
+      records: retained.map(({ body, colliders, ...record }) => ({ ...record,
+        bodyHandle: body?.isValid() ? body.handle : null,
+        colliderHandles: record.removed ? [] : colliders.map((c) => c.handle),
+      })),
+      shoeHandle: shoeBody?.isValid() ? shoeBody.handle : null,
+      shoeColliders: shoeColliders.filter((c) => c.isValid()).map((c) => c.handle),
+      activeId: activeRecord?.id,
+      state: structuredClone({ elapsed, quietTime, stakeHit, groundContact, status, previous, current }),
+    };
+  }
   return {
+    exportState,
+    drainImpacts() { const result = impacts; impacts = []; return result; },
     world,
     handles,
     getShoes: () =>

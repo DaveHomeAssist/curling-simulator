@@ -12,23 +12,26 @@ import { createPracticePhysics } from './physics.js';
 import { createMatch } from './match.js';
 import { createHorseshoeRenderer } from './renderer.js';
 import { createHorseshoeRenderer2D } from './renderer2d.js';
+import { createReplay } from './replay.js';
+import { createImpactAudio } from './audio.js';
+import { classifyShoe } from './scoring.js';
 import './styles.css';
 
 const root = document.querySelector('#horseshoes-app');
 const $ = (selector) => root.querySelector(selector);
 const controls = { aimDeg: 0, strength: 50, arc: 'normal', style: 'turn' };
 const params = new URLSearchParams(location.search);
-let mode = params.get('mode') === 'practice' ? 'practice' : 'match';
+let mode = ['practice', 'solo'].includes(params.get('mode')) ? params.get('mode') : 'match';
 
 async function boot() {
   await RAPIER.init();
   root.innerHTML = `<div class="game-shell">
-    <header><div><span class="eyebrow">PHASE 2 · PROVISIONAL</span><h1>Backyard Horseshoes</h1></div>
+    <header><div><span class="eyebrow">PHASE 3 · PROVISIONAL</span><h1>Backyard Horseshoes</h1></div>
       <nav aria-label="Existing games"><a href="https://mixmash.games/">Mixmash</a><a href="https://davehomeassist.github.io/curling-simulator/">Curling ↗</a></nav>
       <button id="theme-button" aria-label="Switch to dark theme">Dark</button></header>
     <section class="scoreboard" aria-label="Match scoreboard"><div class="player one">Player 1 <strong id="score-one">0</strong></div>
       <div class="inning"><span id="inning-label">Inning 1 · End B</span><small>First to 21 · cancellation scoring</small></div>
-      <div class="player two">Player 2 <strong id="score-two">0</strong></div></section>
+      <div class="player two"><span id="player-two-label">Player 2</span> <strong id="score-two">0</strong></div></section>
     <section class="stage-wrap" aria-label="Horseshoes court"><div id="horseshoe-stage"></div>
       <div class="stage-status"><span id="status-pill">Ready</span><span id="flight-readout"></span></div>
       <div id="stake-flash" hidden>STAKE HIT</div><button id="camera-button">Close view</button>
@@ -36,7 +39,7 @@ async function boot() {
     <div class="tabs" role="tablist" aria-label="Game panels"><button id="play-tab" role="tab" aria-selected="true" aria-controls="play-panel" data-panel="play">Play</button><button id="score-tab" role="tab" aria-selected="false" aria-controls="score-panel" data-panel="score" tabindex="-1">Score</button><button id="settings-tab" role="tab" aria-selected="false" aria-controls="settings-panel" data-panel="settings" tabindex="-1">Options</button></div>
     <section class="deck" aria-label="Game controls">
       <div class="panel" id="play-panel" role="tabpanel" aria-labelledby="play-tab">
-        <div class="sliders"><label for="aim">Aim <output id="aim-value"></output><input id="aim" type="range" min="-4" max="4" step="0.05" value="0"></label>
+        <div id="live-controls"><div class="sliders"><label for="aim">Aim <output id="aim-value"></output><input id="aim" type="range" min="-4" max="4" step="0.05" value="0"></label>
         <label for="strength">Strength <output id="strength-value"></output><input id="strength" type="range" min="0" max="100" step="1" value="50"></label></div>
         <div class="choices"><fieldset id="arc-buttons"><legend>Arc</legend>${Object.entries(
           ARC_PRESETS,
@@ -47,12 +50,12 @@ async function boot() {
           )
           .join('')}</fieldset>
         <fieldset id="style-buttons"><legend>Delivery</legend><button data-style="flip" aria-pressed="false">Flip</button><button data-style="turn" aria-pressed="false">Turn</button></fieldset></div>
-        <div class="actions"><button id="throw-button" class="primary">Throw</button><button id="next-button" hidden>Next inning</button><button id="retry-button" hidden>Retry</button></div>
+        <div class="actions"><button id="throw-button" class="primary">Throw</button><button id="next-button" hidden>Next inning</button><button id="retry-button" hidden>Retry</button><button id="replay-last" disabled>Replay last</button><button id="replay-best" disabled>Best throw</button></div></div><div id="replay-controls" hidden><button id="replay-pause">Pause replay</button><label for="replay-position">Replay position<input id="replay-position" type="range" min="0" max="100" value="0"></label><button id="replay-exit">Exit replay</button></div><p id="throw-feedback" aria-live="polite"></p>
       </div>
       <div class="panel results" id="score-panel" role="tabpanel" tabindex="0" aria-labelledby="score-tab" hidden><h2>Inning result</h2><p id="result-copy">Throw all four shoes to score the inning.</p><ol id="shoe-results"></ol><h2>Match history</h2><ol id="history"></ol></div>
       <div class="panel settings" id="settings-panel" role="tabpanel" aria-labelledby="settings-tab" hidden>
-        <label for="mode">Mode (starts fresh)</label><select id="mode"><option value="match">Local two-player match</option><option value="practice">Practice</option></select>
-        <button id="restart-button">Restart match</button><button id="fullscreen-button">Fullscreen</button><button id="debug-button" aria-pressed="false">Collider lines: off</button>
+        <label for="mode">Mode (starts fresh)</label><select id="mode"><option value="solo">Solo versus computer</option><option value="match">Local two-player match</option><option value="practice">Practice</option></select>
+        <label for="difficulty">Computer difficulty (starts fresh)</label><select id="difficulty"><option value="normal">Normal</option><option value="easy">Easy</option></select><button id="sound-button" aria-pressed="false">Sound: off</button><label for="volume">Volume<input id="volume" type="range" min="0" max="100" value="50"></label><button id="restart-button">Restart match</button><button id="fullscreen-button">Fullscreen</button><button id="debug-button" aria-pressed="false">Collider lines: off</button>
         <div id="preset-row"><span>Practice presets</span>${Object.entries(
           LAUNCH_PRESETS,
         )
@@ -69,9 +72,43 @@ async function boot() {
     <p class="sr-only" id="announcement" role="status" aria-live="polite"></p>
   </div>`;
   let physics = createPracticePhysics(RAPIER, {
-    retainShoes: mode === 'match',
+    retainShoes: mode !== 'practice',
   });
   const match = createMatch();
+  const replay = createReplay();
+  const audio = createImpactAudio();
+  let difficulty = 'normal', worker, aiTimeout, aiBusy = false, aiGeneration = 0, aiMetrics = null, aiError = '';
+  let recordSteps = 0, feedback = '';
+  const aiTurn = () => mode === 'solo' && match.snapshot().player === 1 && match.snapshot().phase === 'ready';
+  const captureFrame = () => ({ ...physics.snapshot(), shoes: mode === 'practice' ? undefined : physics.getShoes() });
+  function cancelAI() { clearTimeout(aiTimeout); aiGeneration++; worker?.terminate(); worker = null; aiBusy = false; }
+  function scheduleAI() {
+    if (!aiTurn() || aiBusy || replay.snapshot().active || document.hidden || aiError) return;
+    aiBusy = true;
+    const id = ++aiGeneration;
+    const fail = () => { if (id !== aiGeneration) return; cancelAI(); aiError = 'Computer unavailable. Restart to retry or choose local play.'; announce(aiError); };
+    try {
+      worker = new Worker(new URL('./ai.worker.js', import.meta.url), { type: 'module' });
+      worker.onerror = fail;
+      aiTimeout = setTimeout(fail, 15000);
+      worker.onmessage = ({ data }) => {
+        if (id !== aiGeneration || !aiTurn() || replay.snapshot().active) return;
+        if (data.error) { fail(); return; }
+        clearTimeout(aiTimeout);
+        aiMetrics = { candidates: data.result.candidates, milliseconds: data.result.milliseconds };
+        worker.terminate(); worker = null; aiBusy = false;
+        launch(data.result.controls, true);
+      };
+      worker.postMessage({ id, saved: physics.exportState(), delivery: { id: match.snapshot().delivered, player: 1 }, difficulty });
+    } catch { fail(); }
+  }
+  function finishRecording() {
+    const state = physics.snapshot();
+    const active = mode === 'practice' ? { ...state, id: 0, player: 0, foul: false } : physics.getShoes().find((shoe) => shoe.id === match.snapshot().delivered - 1);
+    const result = classifyShoe(active);
+    feedback = result.foul ? 'Foul — outside ground contact' : result.ringer ? 'Ringer!' : result.distance <= 0.1524 ? 'Within six inches' : `${state.position.z < COURT.stakeDistance ? 'Short' : 'Long'}${Math.abs(state.position.x) > 0.15 ? state.position.x < 0 ? ' · left' : ' · right' : ''} of the stake`;
+    replay.finish(captureFrame(), result.foul ? -100 : result.ringer ? 10 : -result.distance);
+  }
   let renderer;
   try {
     renderer =
@@ -113,9 +150,14 @@ async function boot() {
       mode === 'close' ? 'Pitching view' : 'Close view';
   }
   function tick() {
+    if (replay.snapshot().active) { replay.step(FIXED_STEP); return; }
+    const wasFlying = physics.snapshot().status === 'flying';
     physics.step();
+    audio.consume(physics.drainImpacts());
+    if (wasFlying && ++recordSteps % 4 === 0) replay.capture(captureFrame());
+    if (wasFlying && physics.snapshot().status !== 'flying') finishRecording();
     if (
-      mode === 'match' &&
+      mode !== 'practice' &&
       match.snapshot().phase === 'flying' &&
       ['resting', 'out'].includes(physics.snapshot().status)
     ) {
@@ -147,10 +189,10 @@ async function boot() {
   function render(alpha = 1) {
     const state = physics.snapshot(),
       m = match.snapshot();
-    const canThrow =
-      mode === 'match' ? m.phase === 'ready' : state.status !== 'flying';
+    const playingReplay = replay.snapshot();
+    const canThrow = !playingReplay.active && !aiTurn() && (mode !== 'practice' ? m.phase === 'ready' : state.status !== 'flying');
     const view =
-      mode === 'match'
+      mode !== 'practice'
         ? {
             ...state,
             status: canThrow ? 'ready' : state.status,
@@ -159,12 +201,26 @@ async function boot() {
           }
         : state;
     const pair =
-      mode === 'match' && canThrow
+      mode !== 'practice' && canThrow
         ? { previous: ready(), current: ready() }
         : physics.getInterpolationPair();
-    renderer.render(pair, alpha, view, controls, physics.world);
+    const playbackFrame = replay.frame();
+    renderer.render(playbackFrame ? { previous: playbackFrame, current: playbackFrame } : pair, playbackFrame ? 1 : alpha, playbackFrame || view, controls, playbackFrame ? null : physics.world);
+    $('#player-two-label').textContent = mode === 'solo' ? 'Computer' : 'Player 2';
+    $('#replay-last').disabled = !playingReplay.available || state.status === 'flying' || playingReplay.active;
+    $('#replay-best').disabled = !playingReplay.bestAvailable || state.status === 'flying' || playingReplay.active;
+    $('#replay-controls').hidden = !playingReplay.active;
+    $('#live-controls').hidden = playingReplay.active;
+    $('#replay-pause').textContent = playingReplay.paused ? 'Resume replay' : 'Pause replay';
+    if (playingReplay.active) $('#replay-position').value = 100 * playingReplay.time / (playingReplay.duration || 1);
+    $('#throw-feedback').textContent = feedback;
+    $('#next-button').disabled = playingReplay.active;
+    $('#retry-button').disabled = playingReplay.active;
+    const audioState = audio.snapshot();
+    $('#sound-button').textContent = audioState.unavailable ? 'Sound unavailable' : `Sound: ${audioState.enabled ? 'on' : 'off'}`;
+    $('#sound-button').setAttribute('aria-pressed', String(audioState.enabled));
     $('#throw-button').disabled = !canThrow;
-    $('#next-button').hidden = mode !== 'match' || m.phase !== 'inning';
+    $('#next-button').hidden = mode === 'practice' || m.phase !== 'inning';
     $('#retry-button').hidden = mode !== 'practice';
     $('#score-one').textContent = m.scores[0];
     $('#score-two').textContent = m.scores[1];
@@ -176,17 +232,17 @@ async function boot() {
       mode === 'practice'
         ? state.status
         : m.phase === 'complete'
-          ? `Player ${m.winner + 1} wins!`
+          ? `${mode === 'solo' && m.winner === 1 ? 'Computer' : `Player ${m.winner + 1}`} wins!`
           : m.phase === 'inning'
             ? m.result.summary
             : m.phase === 'flying'
               ? 'In flight — wait for all shoes'
               : `Player ${m.player + 1} · shoe ${(m.delivered % 2) + 1} of 2`;
-    $('#status-pill').textContent = label;
+    $('#status-pill').textContent = playingReplay.active ? `Replay · ${playingReplay.which} throw` : aiError || (aiBusy ? 'Computer is choosing a throw…' : label);
     $('#flight-readout').textContent =
       state.status === 'flying'
         ? `${state.elapsed.toFixed(1)} s`
-        : mode === 'match' && m.result
+        : mode !== 'practice' && m.result
           ? m.winner === null
             ? 'Inspect Score, then continue from Play'
             : 'Match complete · restart from Options'
@@ -219,22 +275,28 @@ async function boot() {
         .join('');
     }
   }
-  function launch() {
-    if (mode === 'match') {
+  function launch(chosen = controls, computer = false) {
+    if (chosen instanceof Event) chosen = controls;
+    if (replay.snapshot().active || (aiTurn() && !computer)) return false;
+    audio.unlock();
+    audio.reset();
+    if (mode !== 'practice') {
       const delivery = match.launch();
       if (!delivery) return false;
-      physics.spawnShoe({ ...createLaunchCommand(controls), ...delivery });
+      physics.spawnShoe({ ...createLaunchCommand(chosen), ...delivery });
     } else {
       if (physics.snapshot().status === 'flying') return false;
-      physics.spawnShoe(createLaunchCommand(controls));
+      physics.spawnShoe(createLaunchCommand(chosen));
     }
+    recordSteps = 0; feedback = '';
+    replay.begin(captureFrame(), match.snapshot().end);
     clearFlash();
     runner.reset();
     render();
     return true;
   }
   function retry() {
-    if (mode !== 'practice') return false;
+    if (mode !== 'practice' || replay.snapshot().active) return false;
     physics.retry(ready());
     clearFlash();
     runner.reset();
@@ -242,9 +304,10 @@ async function boot() {
     return true;
   }
   function restart() {
+    cancelAI(); aiError = ''; replay.clear(); audio.reset(); audio.suppress(document.hidden); feedback = '';
     match.restart();
     physics.dispose();
-    physics = createPracticePhysics(RAPIER, { retainShoes: mode === 'match' });
+    physics = createPracticePhysics(RAPIER, { retainShoes: mode !== 'practice' });
     physics.retry(ready());
     renderer.setEnd?.(0);
     clearFlash();
@@ -253,10 +316,11 @@ async function boot() {
     lastUi = '';
     render();
     announce(
-      mode === 'match' ? 'New match. Player 1 starts.' : 'Practice ready.',
+      mode !== 'practice' ? 'New match. Player 1 starts.' : 'Practice ready.',
     );
   }
   function nextInning() {
+    if (replay.snapshot().active) return false;
     if (!match.nextInning()) return false;
     physics.retry(ready());
     renderer.setEnd?.(match.snapshot().end);
@@ -311,6 +375,19 @@ async function boot() {
     restart();
     showPanel('play');
   };
+  $('#difficulty').onchange = (e) => { difficulty = e.target.value; restart(); showPanel('play'); };
+  $('#sound-button').onclick = async () => { await audio.setEnabled(!audio.snapshot().enabled); render(); };
+  $('#volume').oninput = (e) => audio.setVolume(Number(e.target.value) / 100);
+  function startReplay(which) {
+    if (physics.snapshot().status === 'flying' || !replay.start(which)) return;
+    cancelAI(); audio.suppress(true); runner.reset();
+    renderer.setEnd?.(replay.end()); setCamera('close'); render();
+  }
+  $('#replay-last').onclick = () => startReplay('last');
+  $('#replay-best').onclick = () => startReplay('best');
+  $('#replay-pause').onclick = () => { replay.pause(); render(); };
+  $('#replay-position').oninput = (e) => { replay.seek(Number(e.target.value) / 100); render(); };
+  $('#replay-exit').onclick = () => { replay.exit(); renderer.setEnd?.(match.snapshot().end); audio.suppress(document.hidden); runner.reset(); render(); };
   $('#camera-button').onclick = () =>
     setCamera(renderer.getCameraMode() === 'close' ? 'pitching' : 'close');
   $('#debug-button').onclick = () => {
@@ -405,12 +482,14 @@ async function boot() {
   }).observe($('#horseshoe-stage'));
   document.addEventListener('visibilitychange', () => {
     lastTime = performance.now();
+    audio.suppress(document.hidden || replay.snapshot().active);
+    if (document.hidden) cancelAI();
     runner.reset();
   });
   function frame(now) {
     const delta = Math.min((now - lastTime) / 1000, 0.05);
     lastTime = now;
-    if (!document.hidden) runner.advance(delta);
+    if (!document.hidden) { runner.advance(delta); scheduleAI(); }
     render(runner.alpha);
     rafId = requestAnimationFrame(frame);
   }
@@ -429,12 +508,17 @@ async function boot() {
       camera: renderer.getCameraMode(),
       cameraPose: renderer.getCamera?.(),
       diagnostics: renderer.getDiagnostics(),
+      ai: { busy: aiBusy, difficulty, error: aiError, metrics: aiMetrics },
+      audio: audio.snapshot(),
+      replay: { ...replay.snapshot(), displayed: replay.frame() },
+      feedback,
       shoe: physics.snapshot(),
       shoes: physics.getShoes(),
-      match: mode === 'match' ? match.snapshot() : null,
+      match: mode !== 'practice' ? match.snapshot() : null,
     });
   window.advanceTime = (ms = 16) => {
     runner.stepCount(Math.max(1, Math.round(ms / (FIXED_STEP * 1000))));
+    scheduleAI();
     render();
     return window.render_game_to_text();
   };

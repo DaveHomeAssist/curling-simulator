@@ -130,3 +130,9 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - 71 source tests and 456 Mixmash tests passed. Published full matches completed 84 throws at each of three viewports. Mouse/emulated-touch controls, native keyboard/history scrolling, orbit/zoom, practice/retry, stable normal-time physics, scoring, end reversal, restart and both return links passed on Dominic.
 - Original Curling modules, Mixmash homepage and provisional noindex/nofollow restrictions preserved. Physical-phone, screen-reader and human play acceptance remain unverified.
 - Next: physical-device play feedback; Phase 3 deferred. No Horseshoes entry exists in the cross-project board registry; docs/HORSESHOES_RELEASE.md owns current next steps and records the projection gap.
+
+## Horseshoes Phase 3 — October 17, 2026
+- User authorized AI opponent, audio and replay through merge/publication. Scope in docs/HORSESHOES_PHASE3_BRIEF.md. Preserve all original games.
+- Reusing clean source worktree on current main949ebea; remote execution on verified Dominic. No delegation.
+- Implemented worker-based clone search, procedural impact audio and view-only last/best replay. 76 tests/build passed on Dominic. Four viewport solo matches finished in 24 throws/6 innings at0–22; maximum observed Normal search767ms, Easy364ms, main-thread animation continued. Replay preserved state; audio output/mute verified. Existing local/practice regression and publication pending.
+- Existing three-viewport local match/practice regression passed (84 throws per match); game skill client executed and screenshot/state inspected. Added graceful audio-unavailable browser coverage and hide live collider lines during view-only replay.

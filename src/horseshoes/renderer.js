@@ -291,8 +291,8 @@ export function createHorseshoeRenderer(container) {
   }
 
   function updateDebug(world) {
-    debugLines.visible = diagnostics;
-    if (!diagnostics) return;
+    debugLines.visible = diagnostics && Boolean(world);
+    if (!debugLines.visible) return;
     const buffers = world.debugRender();
     debugLines.geometry.dispose();
     debugLines.geometry = new THREE.BufferGeometry();

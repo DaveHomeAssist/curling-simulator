@@ -102,6 +102,7 @@ describe('horseshoes Phase 1 physics', () => {
     const state = runUntilDone(simulation, 6);
 
     expect(state.stakeHit).toBe(true);
+    expect(simulation.drainImpacts().some((impact) => impact.type === 'stake' && impact.speed > 0.6)).toBe(true);
     expect(state.groundContact).toBe(true);
   });
 
