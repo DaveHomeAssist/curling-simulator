@@ -79,3 +79,13 @@ Dominic ran 78 source tests, the production build and 471 current Mixmash tests 
 Replay pause/scrub/exit preserves exact match and shoe state, including during AI search and across ends. Restart cancels stale AI work. Audio produces a measurable signal, volume changes and mute work, and unavailable AudioContext degrades gracefully. Physics settle under normal time. Fallback desktop/mobile checks reverse both drawn ends, keep close view on the active stake and restore practice/retry. Existing Curling still loads in 3D and throws; both return links and the unlisted homepage were checked.
 
 Automated release gates are complete. Physical-phone, screen-reader and human listening/play acceptance remain separate and unverified. Materials and tilted/stacked adjudication remain provisional. Next: collect player feedback on the clarified Throw action and physical-device feel; address confirmed issues only. The private board registry still has no Horseshoes entry, so no board synchronization is claimed; this source record owns the next steps.
+
+## FMP lawn and menu — October 17
+
+Approved scope: reuse the FMP camera simulator including its pavilion, distinguish control families by color, and provide a proper paused menu. See HORSESHOES_FMP_MENU_BRIEF.md and src/horseshoes/assets/README.md for model provenance and adaptation limits.
+
+Implemented: decorative pavilion/lawn scene; blue aim/arc, violet delivery and orange Throw; arrival/resume menu with new-game, sound, display and instructions. Mode/difficulty selections apply only when explicitly starting a new game. The menu pauses physics, AI and replay, suppresses sound, contains keyboard focus and closes with Escape. Original game rules and other games remain unchanged.
+
+Dominic verification: 78 source tests and production build passed. Menu pause/focus, explicit new-game choices, light/dark colors and viewport fit passed at 1440×900, 375×812, 667×375 and 3440×1440. Remaining release gates: complete gameplay regression, exact candidate CI/merge/publication and live checks. Human venue likeness and physical-device acceptance remain open.
+
+Next: complete the named release gates, then collect FMP likeness and physical-device play feedback. The private board routing gap remains; no unrelated project board was updated.
