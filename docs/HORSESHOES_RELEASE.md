@@ -11,11 +11,29 @@ Accepted: local two-player match, two consecutive shoes each, final-arrangement 
 
 Source recovery restores authored Phase 1 modules that previously existed only in the original development record, then applies the released navigation/keyboard fixes and match layer. Source main and the published static bundle have separate delivery gates.
 
-Current state: implementation validated on the remote runner. Source tests: 71 passing; production build passed. Browser smoke completed 84-throw matches at desktop 1440×900, mobile 375×812 and short landscape 667×375, with no page errors or failed assets. Mouse/emulated-touch aim, strength, orbit and zoom; native keyboard controls; practice presets and retry; both themes; final score/history and restart passed. The first six-inch fixture incorrectly assumed the curved compound collider had the nominal width at every point; the corrected fixture measures the straight rail. Outside-ground colliders now exclude the pit footprint, avoiding false CCD foul contacts beneath the pit. Match bodies remain physical until the inning ends; foul contacts latch and foul bodies are removed between pitches. Geometry operates in the active end's local frame, transformed 180 degrees for the opposite physical end in the renderer. No change to Curling's source modules.
+Current state: Phase 2 and its keyboard history correction are published at [Mixmash Horseshoes](https://mixmash.games/horseshoes/). The full premerge and postmerge checks passed for the published revision. Automated release verification is complete as of October 17, 2026.
 
-Source PR2 merged as `2773cb4a79dea95c8bbd0efd502e31481fc281f4`; source CI39001524753 and postmerge build/deploy39001586506 passed. Mixmash PR156 merged as `dfca5e0d1a66eb0343af001ead7ded221257fce6` after full CI39001623424 and dedicated gameplay39001623426 passed. Pages39003862355 published the exact merge; live HTML/assets matched SHA256. Live full matches passed at all three viewports; a normal-time throw settled in 2.45 seconds, wheel zoom and both return links passed. Dedicated postmerge gameplay39003862380 passed. Full postmerge repeat39003862372 is pending.
+### Source and publication
 
-A follow-up keyboard regression reproduced one gap: Tab from Score skipped the long history panel. The focused correction places tabs before their panels in DOM order, gives score history an explicit focus target and visible focus ring, and preserves native scroll keys instead of routing them to throw controls. Next: publish and verify this correction, then record final CI/live evidence. Human/physical-phone acceptance remains separate. Phase 3 AI, audio and replay are deferred.
+- Source [PR2](https://github.com/DaveHomeAssist/curling-simulator/pull/2) merged as `2773cb4a79dea95c8bbd0efd502e31481fc281f4`. Source checks 39001524753 and postmerge tests/build/Pages 39001586506 passed.
+- Initial Mixmash [PR156](https://github.com/DaveHomeAssist/mixmash/pull/156) merged as `dfca5e0d1a66eb0343af001ead7ded221257fce6`. Full premerge 39001623424 and postmerge 39003862372 passed, as did dedicated gameplay and Pages.
+- Keyboard follow-up [source PR3](https://github.com/DaveHomeAssist/curling-simulator/pull/3) merged as `5a3dba920c5fd59899a6c9d9550b7ebcdbefc611`; source checks 39004180025 and postmerge tests/build/Pages 39004273272 passed.
+- Current Mixmash [PR157](https://github.com/DaveHomeAssist/mixmash/pull/157) merged as `5949962515fd81ea16d3670bc022913efbd18374`. Full premerge 39004709635 and dedicated 39004709617 passed for candidate `f37ee6e4b6cf70c6139825a2dee6a8fb0fad68f0`; the merge has the identical tree. Dedicated postmerge 39006810831 passed. [Full postmerge 39006810917](https://github.com/DaveHomeAssist/mixmash/actions/runs/39006810917) passed.
+- [Pages 39006810336](https://github.com/DaveHomeAssist/mixmash/actions/runs/39006810336) published the current merge on October 17 at 05:35:43 UTC. Live HTML and all three referenced assets returned 200 with SHA256 matching the packaged build.
+
+### Verified behavior
+
+Verification ran on Dominic using Chromium. All 71 source tests, 456 Mixmash tests and the production build passed. Live smoke completed 84-throw, 21-inning matches at 1440×900, 375×812 and 667×375 with no page errors or failed assets. Scores and bodies were not injected: accelerated checks advance the same Rapier simulation step used in normal play.
+
+Mouse and emulated-touch aim/strength, turn/flip/arc, orbit/pinch/wheel zoom, native keyboard controls, practice presets, immediate retry, both themes, final score/history, end reversal and restart passed. A separate normal-time throw settled in 2.45 seconds and stayed stable. Native Enter activation reached the existing Mixmash homepage and Curling game. Original Curling also completed a live throw. Source inspection confirms no changes to Curling modules or the main Mixmash homepage; Horseshoes remains unlisted with `noindex, nofollow`.
+
+Earlier navigation and focused-control keyboard problems are corrected. A follow-up regression also reproduced Tab skipping long score history; the published correction puts tabs before panels in DOM order, adds a visible panel focus target, and preserves native scrolling keys. Live Tab, ArrowDown, ArrowUp and End behavior passed, including unchanged throw strength at a nonzero value.
+
+Physics checks cover compound shoe colliders, ringers, six-inch distance, cancellation, fouls and displaced shoes. Ground colliders exclude the pit footprint to avoid false CCD foul contacts beneath the pit. Match bodies remain physical until the inning ends; foul contacts latch and foul bodies are removed between pitches. The opposite physical end uses the same rules transformed 180 degrees.
+
+### Remaining acceptance and next steps
+
+Physical-phone, screen-reader and human play acceptance have not been supplied. Touch checks are browser emulation. Materials and tilted/stacked geometric adjudication remain provisional, not tournament certification. Next: play on a physical phone and desktop, collect throw-feel and scoring feedback, and address confirmed defects. Phase 3 AI, audio and replay are deferred.
 
 No Horseshoes record exists in the private cross-project board registry; board synchronization is pending routing rather than reported current. This public-safe document owns the project's current next steps.
 
