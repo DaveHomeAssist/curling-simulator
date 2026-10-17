@@ -33,6 +33,7 @@ async function boot() {
       <div class="stage-status"><span id="status-pill">Ready</span><span id="flight-readout"></span></div>
       <div id="stake-flash" hidden>STAKE HIT</div><button id="camera-button">Close view</button>
       <span class="camera-help">Drag to orbit · wheel / pinch to zoom</span></section>
+    <div class="tabs" role="tablist" aria-label="Game panels"><button id="play-tab" role="tab" aria-selected="true" aria-controls="play-panel" data-panel="play">Play</button><button id="score-tab" role="tab" aria-selected="false" aria-controls="score-panel" data-panel="score" tabindex="-1">Score</button><button id="settings-tab" role="tab" aria-selected="false" aria-controls="settings-panel" data-panel="settings" tabindex="-1">Options</button></div>
     <section class="deck" aria-label="Game controls">
       <div class="panel" id="play-panel" role="tabpanel" aria-labelledby="play-tab">
         <div class="sliders"><label for="aim">Aim <output id="aim-value"></output><input id="aim" type="range" min="-4" max="4" step="0.05" value="0"></label>
@@ -48,7 +49,7 @@ async function boot() {
         <fieldset id="style-buttons"><legend>Delivery</legend><button data-style="flip" aria-pressed="false">Flip</button><button data-style="turn" aria-pressed="false">Turn</button></fieldset></div>
         <div class="actions"><button id="throw-button" class="primary">Throw</button><button id="next-button" hidden>Next inning</button><button id="retry-button" hidden>Retry</button></div>
       </div>
-      <div class="panel results" id="score-panel" role="tabpanel" aria-labelledby="score-tab" hidden><h2>Inning result</h2><p id="result-copy">Throw all four shoes to score the inning.</p><ol id="shoe-results"></ol><h2>Match history</h2><ol id="history"></ol></div>
+      <div class="panel results" id="score-panel" role="tabpanel" tabindex="0" aria-labelledby="score-tab" hidden><h2>Inning result</h2><p id="result-copy">Throw all four shoes to score the inning.</p><ol id="shoe-results"></ol><h2>Match history</h2><ol id="history"></ol></div>
       <div class="panel settings" id="settings-panel" role="tabpanel" aria-labelledby="settings-tab" hidden>
         <label for="mode">Mode (starts fresh)</label><select id="mode"><option value="match">Local two-player match</option><option value="practice">Practice</option></select>
         <button id="restart-button">Restart match</button><button id="fullscreen-button">Fullscreen</button><button id="debug-button" aria-pressed="false">Collider lines: off</button>
@@ -65,7 +66,6 @@ async function boot() {
         <p>Provisional rigid-body physics and geometric scoring; tilted/stacked shoes are not tournament-certified. No wind, deformable soil or stake flex. No saved match; reloading starts fresh.</p>
       </div>
     </section>
-    <div class="tabs" role="tablist" aria-label="Game panels"><button id="play-tab" role="tab" aria-selected="true" aria-controls="play-panel" data-panel="play">Play</button><button id="score-tab" role="tab" aria-selected="false" aria-controls="score-panel" data-panel="score" tabindex="-1">Score</button><button id="settings-tab" role="tab" aria-selected="false" aria-controls="settings-panel" data-panel="settings" tabindex="-1">Options</button></div>
     <p class="sr-only" id="announcement" role="status" aria-live="polite"></p>
   </div>`;
   let physics = createPracticePhysics(RAPIER, {
@@ -372,7 +372,7 @@ async function boot() {
       e.metaKey ||
       e.altKey ||
       e.target.closest?.(
-        'button,a,input,select,textarea,summary,[contenteditable="true"],[role="button"]',
+        'button,a,input,select,textarea,summary,[contenteditable="true"],[role="button"],[role="tabpanel"]',
       )
     )
       return;

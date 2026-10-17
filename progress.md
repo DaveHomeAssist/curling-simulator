@@ -122,3 +122,4 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - Phase 1 release PR155 merge 2c417b359b5d0b99188909fdd9e78283351a3d90: full postmerge CI 38989410478 passed, as did dedicated Horseshoes CI and Pages.
 - Recovered readable original Phase 1 source from authored changes; source recovery/build and Phase 2 acceptance pending.
 - Phase 2: 71 tests and production build pass on Dominic. Complete 84-throw matches pass at 1440×900, 375×812 and 667×375 with zero page/request failures. Both themes, orbit/zoom, keyboard native controls, practice presets and immediate retry verified. Source PR and Mixmash publication pending.
+- Phase 2 source PR2 and Mixmash PR156 merged; live full matches, normal-time settling, wheel zoom and native return navigation passed. Keyboard-only follow-up reproduced Tab skipping score history. Correcting panel focus/order and scroll-key routing; added a regression that fails on the first published version.
