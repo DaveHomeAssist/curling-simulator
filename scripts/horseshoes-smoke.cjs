@@ -35,9 +35,15 @@ fs.mkdirSync(output, { recursive: true });
         200,
       );
       await page.waitForFunction(() => window.__horseshoes);
+      await page.locator('#menu-resume').click();
       const state = () => page.evaluate(() => window.__horseshoes.getState());
-      const activate = (selector) =>
-        touch ? page.locator(selector).tap() : page.locator(selector).click();
+      const activate = async (selector) => {
+        const open = await page.locator('#game-menu').evaluate(d => d.open);
+        if (selector === '#settings-tab' && open) return;
+        if (open && !await page.locator(selector).evaluate(e => !!e.closest('#game-menu'))) await page.locator('#menu-resume').click();
+        if (selector.startsWith('[data-preset')) await page.locator('.menu-help').evaluate(e => e.open = true);
+        await (touch ? page.locator(selector).tap() : page.locator(selector).click());
+      };
       const settle = () =>
         page.evaluate(() => {
           advanceTime(13000);
@@ -92,7 +98,7 @@ fs.mkdirSync(output, { recursive: true });
       await activate('[data-style=flip]');
       assert.equal((await state()).controls.style, 'flip');
       await activate('#throw-button');
-      await page.waitForTimeout(450);
+      await page.waitForFunction(() => __horseshoes.getState().shoe.position.z > 1, null, { timeout: 5000 });
       assert.ok((await state()).shoe.position.z > 1);
       assert.equal(await page.locator('#throw-button').isDisabled(), true);
       await settle();
@@ -231,7 +237,7 @@ fs.mkdirSync(output, { recursive: true });
       await activate('#restart-button');
       assert.equal((await state()).match.history.length, 0);
       await activate('#settings-tab');
-      await page.selectOption('#mode', 'practice');
+      await page.selectOption('#mode', 'practice'); await page.locator('#restart-button').click();
       assert.equal((await state()).shoe.status, 'ready');
       for (const preset of ['center', 'stake', 'near', 'loft']) {
         await activate('#settings-tab');
@@ -284,7 +290,7 @@ fs.mkdirSync(output, { recursive: true });
         );
         await page.keyboard.press('ArrowRight');
         assert.equal(
-          await page.locator('#settings-tab').getAttribute('aria-selected'),
+          await page.locator('#play-tab').getAttribute('aria-selected'),
           'true',
         );
         await page.keyboard.press('Home');
@@ -331,9 +337,16 @@ fs.mkdirSync(output, { recursive: true });
       fallbackUrl.searchParams.set('renderer', '2d');
       await page.goto(fallbackUrl.href, { waitUntil: 'networkidle' });
       await page.waitForFunction(() => window.__horseshoes);
+      await page.locator('#menu-resume').click();
       await page.evaluate(() => __horseshoes.stop());
       const state = () => page.evaluate(() => __horseshoes.getState());
-      const activate = (selector) => touch ? page.locator(selector).tap() : page.locator(selector).click();
+      const activate = async (selector) => {
+        const open = await page.locator('#game-menu').evaluate(d => d.open);
+        if (selector === '#settings-tab' && open) return;
+        if (open && !await page.locator(selector).evaluate(e => !!e.closest('#game-menu'))) await page.locator('#menu-resume').click();
+        if (selector.startsWith('[data-preset')) await page.locator('.menu-help').evaluate(e => e.open = true);
+        await (touch ? page.locator(selector).tap() : page.locator(selector).click());
+      };
       assert.equal((await state()).renderer, '2d-fallback');
       for (const end of [0, 1]) {
         assert.equal((await state()).match.end, end);
@@ -352,7 +365,7 @@ fs.mkdirSync(output, { recursive: true });
         if (end === 0) await activate('#next-button');
       }
       await activate('#settings-tab');
-      await page.selectOption('#mode', 'practice');
+      await page.selectOption('#mode', 'practice'); await page.locator('#restart-button').click();
       assert.equal((await state()).cameraPose.end, 0);
       assert.equal((await state()).mode, 'horseshoes-practice');
       await activate('#throw-button');

@@ -66,7 +66,7 @@ function addCourt(scene) {
   const court = new THREE.Group();
   const ground = new THREE.Mesh(
     new THREE.BoxGeometry(6.4, 0.2, 24),
-    new THREE.MeshStandardMaterial({ color: 0x192d27, roughness: 0.96 }),
+    new THREE.MeshStandardMaterial({ color: 0x6d8c4b, roughness: 0.96 }),
   );
   ground.position.set(0, -0.1, 8);
   ground.receiveShadow = true;
@@ -74,7 +74,7 @@ function addCourt(scene) {
 
   const lane = new THREE.Mesh(
     new THREE.PlaneGeometry(2.5, 15.8),
-    new THREE.MeshStandardMaterial({ color: 0x25483b, roughness: 0.94 }),
+    new THREE.MeshStandardMaterial({ color: 0x819e58, roughness: 0.94 }),
   );
   lane.rotation.x = -Math.PI / 2;
   lane.position.set(0, 0.003, 6.15);
@@ -172,10 +172,10 @@ function addCourt(scene) {
 
 export function createHorseshoeRenderer(container) {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0c1715);
-  scene.fog = new THREE.Fog(0x0c1715, 18, 36);
+  scene.background = new THREE.Color(0xb7d9e8);
+  scene.fog = new THREE.Fog(0xb7d9e8, 100, 280);
 
-  const camera = new THREE.PerspectiveCamera(48, 1, 0.05, 80);
+  const camera = new THREE.PerspectiveCamera(48, 1, 0.05, 400);
   let cameraMode = 'pitching';
   let end = 0;
   const renderer = new THREE.WebGLRenderer({
@@ -202,6 +202,13 @@ export function createHorseshoeRenderer(container) {
   orbit.enableDamping = false;
   renderer.domElement.style.touchAction = 'none';
   addCourt(scene);
+  const horizon = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), new THREE.MeshLambertMaterial({ color: 0x607e47 }));
+  horizon.rotation.x = -Math.PI / 2; horizon.position.y = -4; scene.add(horizon);
+  let environment = 'loading', disposed = false;
+  new THREE.ObjectLoader().load(new URL('./assets/fmp-venue.json', import.meta.url).href, (venue) => {
+    if (disposed) return;
+    scene.add(venue); environment = 'fmp-lawn'; renderer.render(scene, camera);
+  }, undefined, () => { environment = 'unavailable'; });
   scene.add(new THREE.HemisphereLight(0xd8f4eb, 0x1b241d, 1.9));
   const sun = new THREE.DirectionalLight(0xffe3b0, 3.2);
   sun.position.set(-3.5, 8, -1.5);
@@ -394,12 +401,14 @@ export function createHorseshoeRenderer(container) {
       applyCamera();
     },
     getCameraMode: () => cameraMode,
+    getEnvironment: () => environment,
     setDiagnostics(enabled) {
       diagnostics = Boolean(enabled);
       debugLines.visible = diagnostics;
     },
     getDiagnostics: () => diagnostics,
     dispose() {
+      disposed = true;
       orbit.dispose();
       renderer.dispose();
       renderer.domElement.remove();

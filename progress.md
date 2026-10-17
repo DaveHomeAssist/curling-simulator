@@ -147,3 +147,7 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - Source PR7 and Mixmash PR163 merged; package `f48ad3e1873c6296ab1492c2c958e606e7884426` published with full pre/post CI, dedicated gameplay and Pages passing. Live artifact parity and four viewport control/solo/replay/audio checks passed on Dominic. Original Curling/homepage and noindex preserved.
 - Earlier PR159 postmerge catalog failure is superseded by the current passing checks. See docs/HORSESHOES_RELEASE.md for exact evidence.
 - Next: physical-device and human play feedback; no new feature scope inferred. Private board routing remains unavailable for Horseshoes.
+
+2026-10-17 — FMP lawn and menu feedback
+- New scope: reuse the FMP camera simulator venue scene, distinguish control families by color, and provide a paused game menu/settings. See docs/HORSESHOES_FMP_MENU_BRIEF.md.
+- Source venue found under system-by-dave/apps/fmp-camera-sim; no changes to that owning project. No camera equipment or network records will be imported.
