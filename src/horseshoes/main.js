@@ -56,7 +56,7 @@ async function boot() {
       <div class="panel results" id="score-panel" role="tabpanel" tabindex="0" aria-labelledby="score-tab" hidden><h2>Inning result</h2><p id="result-copy">Throw all four shoes to score the inning.</p><ol id="shoe-results"></ol><h2>Match history</h2><ol id="history"></ol></div>
     </section>
 <dialog id="game-menu" aria-labelledby="menu-title"><div class="menu-heading"><div><span class="eyebrow">BACKYARD HORSESHOES</span><h2 id="menu-title">On the lawn at FMP</h2><p id="menu-caption">Pick a game, settle in, take your shot.</p></div><button id="menu-resume" class="menu-resume">Play</button></div><div id="settings-panel" class="menu-body">        <section class="menu-group"><h3>New game</h3><label for="mode">Mode for a new game</label><select id="mode"><option value="solo">Solo versus computer</option><option value="match">Local two-player match</option><option value="practice">Practice</option></select>
-        <label for="difficulty">Computer difficulty</label><select id="difficulty"><option value="normal">Normal</option><option value="easy">Easy</option></select></section><section class="menu-group"><h3>Sound</h3><button id="sound-button" aria-pressed="false">Sound: off</button><label for="volume">Volume<input id="volume" type="range" min="0" max="100" value="50"></label></section><section class="menu-group"><h3>Display</h3><button id="menu-theme-button">Switch theme</button><button id="fullscreen-button">Fullscreen</button><button id="tour-button">Tour venue</button><button id="monitors-button">View delay screens</button><button id="debug-button" aria-pressed="false">Physics guides: off</button>
+        <label for="difficulty">Computer difficulty</label><select id="difficulty"><option value="normal">Normal</option><option value="easy">Easy</option></select></section><section class="menu-group"><h3>Sound</h3><button id="sound-button" aria-pressed="false">Sound: off</button><label for="volume">Volume<input id="volume" type="range" min="0" max="100" value="50"></label></section><section class="menu-group"><h3>Display</h3><button id="menu-theme-button">Switch theme</button><button id="fullscreen-button">Fullscreen</button><p id="venue-status" role="status">FMP scenery loading…</p><button id="tour-button">Tour venue</button><button id="monitors-button">View delay screens</button><button id="debug-button" aria-pressed="false">Physics guides: off</button>
         </section><details class="menu-help"><summary>How to play & practice</summary><div id="preset-row"><span>Practice presets</span>${Object.entries(
           LAUNCH_PRESETS,
         )
@@ -221,7 +221,18 @@ async function boot() {
           String(b.dataset[key] === controls[key]),
         );
   }
+  let venueStatus = '';
+  function updateVenueStatus() {
+    const environment = renderer.getEnvironment?.() || 'fallback';
+    if (environment === venueStatus) return;
+    venueStatus = environment;
+    const available = environment === 'fmp-lawn';
+    $('#tour-button').disabled = !available;
+    $('#monitors-button').disabled = !available;
+    $('#venue-status').textContent = available ? 'Four lawn screens · instant replays' : environment === 'loading' ? 'FMP scenery loading. You can still play.' : 'FMP venue views unavailable. The court remains playable.';
+  }
   function render(alpha = 1) {
+    updateVenueStatus();
     const state = physics.snapshot(),
       m = match.snapshot();
     const playingReplay = replay.snapshot();
@@ -533,6 +544,7 @@ async function boot() {
     runner.reset();
   });
   function frame(now) {
+    updateVenueStatus();
     const delta = Math.min((now - lastTime) / 1000, 0.05);
     lastTime = now;
     if (!document.hidden && !menu.open) { runner.advance(delta); scheduleAI(); }
@@ -582,8 +594,6 @@ async function boot() {
       cancelAnimationFrame(rafId);
     },
   };
-  $('#tour-button').disabled = renderer.kind !== 'three';
-  $('#monitors-button').disabled = renderer.kind !== 'three';
   updateControls();
   renderer.resize();
   render();
