@@ -117,3 +117,24 @@ ECP-1.0 revision1.0 mapping is scoped in `HORSESHOES_BROADCAST_BRIEF.md`: the ex
 - Dominic ran 80 source tests, production build, 473 site tests and focused catalog checks. Four-viewport packaged and public browser checks passed for monitor feed/concurrent next throw, end reversal, menu pause/reset, manual replay, intro skip/completion, pointer/Escape cancellation, delayed asset loading, reduced motion and viewport fit. Actual game-skill client and screenshots were inspected. Public close-up images differ as recorded shoe positions advance while live physics/match state remain identical; throwing resumes the pitching view. Fallback remains playable. Existing dedicated regression covers complete local/solo matches, audio, replay, AI and input. Public return-link/original Curling checks passed without page errors.
 
 Next: collect physical-phone and cinematic/venue-likeness feedback, then address confirmed issues. Browser touch emulation is not physical-device acceptance; measured audio is not human listening acceptance. No Horseshoes record exists in the private Next Steps Board registry, so this source record owns next steps and that routing gap remains explicit.
+
+## October 18 audit repairs
+
+Approved correction scope: short-landscape control clipping and court visibility; the nine development dependency findings from the 100-game audit; supported static-host security controls; stale publisher verification wording. Acceptance requires visible reachable controls in both themes at short viewports, unchanged gameplay and original games, clean scoped dependency audit, tested CSP behavior, exact CI/merge/Pages and live artifact verification. Work is in progress; no new closure is claimed. The source release record remains the next-steps owner because the private board has no Horseshoes mapping.
+
+### Static-host hardening boundary
+
+The production Horseshoes document has a CSP restricting scripts, connections
+and workers to its own origin; inline scripts, frames, objects, base URLs and
+form submissions are blocked. `wasm-unsafe-eval` permits the bundled Rapier
+WebAssembly engine without allowing JavaScript `eval`. Referrer information is
+suppressed. The development server defaults to loopback; LAN exposure requires
+an explicit host option. Curling's entry document has no added policy.
+
+GitHub Pages is the direct publisher with HTTPS enforcement enabled. It does not
+provide a per-route response-header configuration here. A document policy cannot
+enforce `frame-ancestors`, HSTS or `X-Content-Type-Options`; these remain hosting
+hardening gaps, not claimed fixes. Adding inert `_headers` or meta substitutes
+would not provide protection. An edge proxy/hosting change would affect a wider
+boundary than this isolated game correction and is not included. No live exploit
+was established by the audit.

@@ -33,11 +33,11 @@ async function boot() {
     <section class="scoreboard" aria-label="Match scoreboard"><div class="player one">Player 1 <strong id="score-one">0</strong></div>
       <div class="inning"><span id="inning-label">Inning 1 · End B</span><small>First to 21 · cancellation scoring</small></div>
       <div class="player two"><span id="player-two-label">Player 2</span> <strong id="score-two">0</strong></div></section>
-    <section class="stage-wrap" aria-label="Horseshoes court"><div id="horseshoe-stage"></div>
+    <section id="court-panel" class="stage-wrap" aria-label="Horseshoes court"><div id="horseshoe-stage"></div>
       <div class="stage-status"><span id="status-pill">Ready</span><span id="flight-readout"></span></div>
       <div id="stake-flash" hidden>STAKE HIT</div><button id="camera-button">Close view</button>
       <div id="tour-title" hidden><span>LIVE FROM THE LAWN</span><strong>Backyard Horseshoes</strong><small>FMP Pavilion</small></div><button id="skip-tour" hidden>Skip intro</button><span class="camera-help">Drag to orbit · wheel / pinch to zoom</span></section>
-    <div class="tabs" role="tablist" aria-label="Game panels"><button id="play-tab" role="tab" aria-selected="true" aria-controls="play-panel" data-panel="play">Controls</button><button id="score-tab" role="tab" aria-selected="false" aria-controls="score-panel" data-panel="score" tabindex="-1">Score</button></div>
+    <div class="tabs" role="tablist" aria-label="Game panels"><button id="court-tab" role="tab" aria-selected="false" aria-controls="court-panel" data-panel="court" tabindex="-1" hidden>Court</button><button id="play-tab" role="tab" aria-selected="true" aria-controls="play-panel" data-panel="play">Controls</button><button id="score-tab" role="tab" aria-selected="false" aria-controls="score-panel" data-panel="score" tabindex="-1">Score</button></div>
     <section class="deck" aria-label="Game controls">
       <div class="panel" id="play-panel" role="tabpanel" aria-labelledby="play-tab">
         <div id="live-controls"><div class="sliders"><label for="aim">Aim <output id="aim-value"></output><input id="aim" type="range" min="-4" max="4" step="0.05" value="0"></label>
@@ -160,16 +160,35 @@ async function boot() {
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   });
   menu.addEventListener('cancel', (e) => { e.preventDefault(); closeMenu(); });
-  function showPanel(name) {
+  const compactView = matchMedia('(max-width: 559px) and (max-height: 600px)');
+  let activePanel = 'play';
+  const gameLinks = $('header nav');
+  function showPanel(name, preserveMenu = false) {
     if (name === 'settings') { openMenu(); return; }
-    if (menu.open) closeMenu();
+    if (menu.open && !preserveMenu) closeMenu();
+    if (name === 'court' && !compactView.matches) name = 'play';
+    activePanel = name;
+    $('.deck').hidden = compactView.matches && name === 'court';
     for (const button of root.querySelectorAll('[data-panel]')) {
       const active = button.dataset.panel === name;
       button.setAttribute('aria-selected', String(active));
       button.tabIndex = active ? 0 : -1;
-      $(`#${button.dataset.panel}-panel`).hidden = !active;
+      $(`#${button.dataset.panel}-panel`).hidden = button.dataset.panel === 'court' ? compactView.matches && !active : !active;
     }
   }
+  function syncCompactView() {
+    $('#court-tab').hidden = !compactView.matches;
+    if (compactView.matches) $('.menu-footer').prepend(gameLinks);
+    else $('header').insertBefore(gameLinks, $('#settings-tab'));
+    const court = $('#court-panel');
+    if (compactView.matches) { court.setAttribute('role', 'tabpanel'); court.setAttribute('aria-labelledby', 'court-tab'); }
+    else { court.removeAttribute('role'); court.removeAttribute('aria-labelledby'); }
+    const courtFocused = document.activeElement === $('#court-tab');
+    showPanel(activePanel, true);
+    if (courtFocused && !compactView.matches) $('#play-tab').focus();
+  }
+  compactView.addEventListener('change', syncCompactView);
+  syncCompactView();
   function clearFlash() {
     clearTimeout(flashTimer);
     $('#stake-flash').hidden = true;
@@ -485,7 +504,7 @@ async function boot() {
   for (const button of root.querySelectorAll('[data-panel]')) {
     button.onclick = () => showPanel(button.dataset.panel);
     button.onkeydown = (e) => {
-      const tabs = [...root.querySelectorAll('[data-panel]')];
+      const tabs = [...root.querySelectorAll('[data-panel]')].filter(tab => !tab.hidden);
       let index = tabs.indexOf(button);
       if (e.key === 'ArrowRight') index = (index + 1) % tabs.length;
       else if (e.key === 'ArrowLeft') index = (index + tabs.length - 1) % tabs.length;
