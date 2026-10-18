@@ -168,3 +168,7 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - Dominic: 80 tests and Vite production build passed. Four-viewport broadcast/tour checks passed: independent next throw, menu pause, manual replay, end reversal, reset, intro skip/completion, pointer/Escape cancellation and reduced motion. Screenshots inspected; corrected overlay flicker and monitor-view return label. Exact final package/CI/live verification pending.
 - Review corrections: delayed venue load now reapplies a requested monitor view; every tour exit restores pitching mode and its button label. Added delayed asset regression and exact tour-return assertion.
 - Publisher review follow-up: disable venue actions until all four anchors load; visible unavailable/unsupported status with playable court. Replay feed camera now follows shoe height as well as horizontal position, fixing an offscreen flying shoe found in screenshot inspection. Added failed/unsupported asset regressions.
+
+2026-10-17 — Pavilion broadcast release closed
+- Source PR13/14 and Mixmash PR170 merged; exact pre/post CI and Pages passed. Publisher merge 009be088b65ec82663faed06aafa7575344f3a0e. Public assets match and four-viewport camera/broadcast, rendered-frame isolation, fallback and original-game checks passed on Dominic. See docs/HORSESHOES_RELEASE.md for run IDs and acceptance limits.
+- Next: physical-device and cinematic/venue feedback; no additional feature scope. Private board routing gap remains.
