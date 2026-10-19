@@ -138,3 +138,7 @@ hardening gaps, not claimed fixes. Adding inert `_headers` or meta substitutes
 would not provide protection. An edge proxy/hosting change would affect a wider
 boundary than this isolated game correction and is not included. No live exploit
 was established by the audit.
+
+### Dependency repair decision
+
+Dave approved the Vitest4 major upgrade on October18. Vite7.3.7 and Vitest4.1.12 retain the supported Node20/22 runtime and existing test APIs. Patched transitive packages are esbuild0.28.2, picomatch4.0.7, postcss8.5.31, nanoid3.3.20 and source-map-js1.2.2. Vitest4 removes the vulnerable Tinypool path and updates @vitest/mocker. The fresh full and runtime-only npm audits report zero known advisories. These are development dependency findings; no live exploit was established. There were no overlapping open update PRs at repair intake. Exact final verification and publication remain pending below.
