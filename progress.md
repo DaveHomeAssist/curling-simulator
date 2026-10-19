@@ -218,3 +218,8 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - Local development server remains at http://127.0.0.1:5173/.
 - No horseshoes implementation changes. Physical touch feel and hardware GPU
   performance remain unverified; private board has no registered Curling entry.
+
+2026-10-18 — Audit repair source delivered; publisher CI blocked
+- Vitest4 approval is settled. Source PR16 merged ca3d371e60cf5ded9dff94c23ffe4c334e996cc6; candidate/postmerge tests, build and Pages passed. Full and production dependency audits are zero. Final source candidate4d09e2f, all80 source tests and487 integrated publisher tests passed; complete local/solo, menu/broadcast and seven-size/two-theme layout/CSP regressions passed.
+- Publisher PR178 candidate0d656d9 has green dedicated Horseshoes CI39185836501. Full CI39185836334 failed three attempts on unchanged Front of House browser startup/termination, with the exact suggestions test passing independently on Dominic. No merge/publication is claimed. Hosting header limitations are documented in docs/HORSESHOES_RELEASE.md.
+- Next: shared runner recovery or approved GitHub-hosted minutes, then full CI, publisher merge/Pages and final public verification. Preserve independent Curling and Mixmash work. Private board routing remains unavailable.
