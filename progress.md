@@ -181,7 +181,7 @@ Original prompt: complete all phases without asking again. execute all phases, c
 
 - PR16 review identified focus escaping when return links reparent during resize. Capture link focus before moving the nav and restore Menu resume/settings focus appropriately; regression covers both resize directions with focused links.
 
-2026-10-18 — Curling 2038 (in progress)
+2026-10-18 — Curling 2038 (released; physical acceptance pending)
 - Dave confirmed curling only; authorized repeated testing, fixes, push and deploy.
 - Added real free orbit/zoom, explicit light/dark theme and compact delivery dock.
 - Fixed modal key leakage, pointer cancellation, fullscreen target and Freeze key.
@@ -207,3 +207,14 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - Visible hog/back lines now read the same coordinates used by gameplay bounds.
 - Release gate: commit/push and GitHub Pages/live draw check next; physical
   device feel and hardware GPU performance remain human acceptance work.
+
+2026-10-18 — Curling 2038 release verified
+- Runtime commit 63c1dda963ec0ffbb48c69913043a81121813c41 pushed to main.
+- GitHub Pages build/tests/deploy passed: https://github.com/DaveHomeAssist/curling-simulator/actions/runs/39186353507
+- Live https://davehomeassist.github.io/curling-simulator/ passed the browser draw
+  check using the 3D renderer: stone at x=0.826, y=23.611 inside the house,
+  no page runtime errors; close orbit screenshot inspected.
+- Required development skill browser client also completed; screenshot inspected.
+- Local development server remains at http://127.0.0.1:5173/.
+- No horseshoes implementation changes. Physical touch feel and hardware GPU
+  performance remain unverified; private board has no registered Curling entry.

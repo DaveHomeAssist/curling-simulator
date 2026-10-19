@@ -56,3 +56,13 @@ lands in the house and captures a close 3D view. `CURLING_IMAGE` sets its output
 
 Browser tests use software WebGL and emulated viewports. They do not establish
 physical touch feel, hardware GPU frame rate, or human approval of the art direction.
+
+## Released evidence
+
+Runtime commit `63c1dda963ec0ffbb48c69913043a81121813c41` is pushed to main.
+[Pages run 39186353507](https://github.com/DaveHomeAssist/curling-simulator/actions/runs/39186353507)
+passed tests, build and deployment. The [live game](https://davehomeassist.github.io/curling-simulator/)
+passed `curling-live-smoke.cjs` with renderer `3d`, stone coordinates
+`x=0.826, y=23.611` inside the house, and no page runtime errors. The resulting
+close orbit screenshot was inspected. This supplements the full production
+preview suite above; it is not a claim of physical-device acceptance.
