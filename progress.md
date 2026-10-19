@@ -172,3 +172,11 @@ Original prompt: complete all phases without asking again. execute all phases, c
 2026-10-17 — Pavilion broadcast release closed
 - Source PR13/14 and Mixmash PR170 merged; exact pre/post CI and Pages passed. Publisher merge 009be088b65ec82663faed06aafa7575344f3a0e. Public assets match and four-viewport camera/broadcast, rendered-frame isolation, fallback and original-game checks passed on Dominic. See docs/HORSESHOES_RELEASE.md for run IDs and acceptance limits.
 - Next: physical-device and cinematic/venue feedback; no additional feature scope. Private board routing gap remains.
+
+2026-10-18 — Audit repairs authorized
+- Fix short-landscape clipping first, then bounded dependency advisories, static-host security hardening and stale publication docs. Preserve original games. Source, browser, CI, merge and live gates pending; Dominic selected for sustained checks.
+- Landscape/court-tab layout and policy browser checks passed seven sizes/two themes on Dominic. All80 source tests pass after excluding macOS transfer sidecars from the disposable runner fixture. Compatible Vite/transitive repairs applied; Vitest4 approval is pending because remaining findings have no complete Vitest3 fix. Full gameplay suites and release gates remain pending.
+
+- Dave approved Vitest4 on October18. Updated to4.1.12; full and production npm audits now report zero findings.480 Mixmash tests pass. Complete local matches/fallback smoke passed three viewports. Phase3 test initially used its source-default /horseshoes.html against a packaged /horseshoes/ server (404); rerunning with the explicit packaged URL.
+
+- PR16 review identified focus escaping when return links reparent during resize. Capture link focus before moving the nav and restore Menu resume/settings focus appropriately; regression covers both resize directions with focused links.

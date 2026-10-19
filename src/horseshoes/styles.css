@@ -590,3 +590,60 @@ legend {
 
 .tour-active .stage-status, .tour-active .camera-help, .tour-active #camera-button { visibility: hidden; }
 @media (max-height: 500px) { #tour-title { top: 0.5rem; left: 0.5rem; padding: 0.3rem 0.5rem; } #tour-title span, #tour-title small { display: none; } #tour-title strong { font-size: 1rem; } }
+
+/* Short windows use width for controls instead of squeezing the court away. */
+@media (max-height: 600px) and (min-width: 560px) {
+  .game-shell { max-width: none; grid-template-columns: minmax(0, 1fr) 270px; grid-template-rows: auto auto auto minmax(0, 1fr); }
+  header, .scoreboard { grid-column: 1 / -1; }
+  header { flex-wrap: nowrap; }
+  header > div { flex: 1; min-width: 0; }
+  header nav { order: 0; font-size: 12px; gap: 8px; }
+  header button { min-height: 32px; padding: 4px 8px; }
+  .stage-wrap { grid-column: 1; grid-row: 3 / 5; }
+  .tabs { grid-column: 2; grid-row: 3; }
+  .deck { grid-column: 2; grid-row: 4; }
+  .sliders { gap: 12px; }
+  .sliders label { min-width: 0; font-size: 12px; }
+  .sliders output { float: none; display: block; font-size: 11px; }
+  .choices { display: grid; gap: 3px; }
+  .choices fieldset { min-width: 0; }
+  .choices legend { width: 48px; }
+  .choices button { flex: 1; font-size: 12px; padding: 3px 5px; }
+  .actions { gap: 4px; }
+  .actions button { font-size: 11px; min-width: 0; }
+  #throw-feedback { font-size: 11px; line-height: 1.2; }
+  .stage-status { top: 5px; left: 5px; right: 5px; padding: 4px; font-size: 11px; }
+  #flight-readout { display: none; }
+  #camera-button { right: 5px; bottom: 5px; min-height: 30px; padding: 4px 6px; font-size: 11px; }
+}
+/* At magnified/tiny sizes, alternate scene and controls without clipping either. */
+@media (max-height: 600px) and (max-width: 559px) {
+  .game-shell { grid-template-rows: auto auto minmax(0, 1fr) auto; }
+  header { flex-wrap: nowrap; }
+  header > div, header > #theme-button { display: none; }
+  header { justify-content: flex-end; position: absolute; right: 5px; top: 5px; z-index: 2; }
+  #settings-tab { min-height: 28px; padding: 3px 7px; }
+  .scoreboard { grid-row: 1; margin-right: 64px; min-height: 32px; padding: 2px 4px; }
+  .player { gap: 3px; font-size: 10px; }
+  .player strong { font-size: 18px; }
+  .inning { font-size: 10px; }
+  .stage-wrap, .deck { grid-row: 2 / 4; min-height: 0; }
+  .tabs { grid-row: 4; }
+  .tabs button { min-width: 0; }
+  .sliders { gap: 12px; }
+  .choices { display: grid; gap: 3px; }
+  .choices legend { width: 48px; }
+  .choices button { flex: 1; }
+  #throw-feedback { font-size: 11px; line-height: 1.2; }
+}
+
+@media (max-height: 600px) { .menu-footer { flex-wrap: wrap; gap: 8px; } .menu-footer nav { font-size: 12px; } .menu-footer span { display: none; } }
+
+@media print {
+  html, body, #horseshoes-app { height: auto; overflow: visible; }
+  .game-shell { height: auto; display: block; }
+  .stage-wrap { height: 300px; }
+  .deck, .panel { height: auto; overflow: visible; }
+  .tabs, header button, #game-menu, .camera-help, #camera-button { display: none !important; }
+  #score-panel[hidden], .deck[hidden] { display: block !important; }
+}
