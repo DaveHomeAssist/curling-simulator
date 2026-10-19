@@ -177,6 +177,7 @@ async function boot() {
     }
   }
   function syncCompactView() {
+    const linksFocused = gameLinks.contains(document.activeElement);
     $('#court-tab').hidden = !compactView.matches;
     if (compactView.matches) $('.menu-footer').prepend(gameLinks);
     else $('header').insertBefore(gameLinks, $('#settings-tab'));
@@ -185,7 +186,8 @@ async function boot() {
     else { court.removeAttribute('role'); court.removeAttribute('aria-labelledby'); }
     const courtFocused = document.activeElement === $('#court-tab');
     showPanel(activePanel, true);
-    if (courtFocused && !compactView.matches) $('#play-tab').focus();
+    if (linksFocused) $(menu.open ? '#menu-resume' : '#settings-tab').focus();
+    else if (courtFocused && !compactView.matches) $('#play-tab').focus();
   }
   compactView.addEventListener('change', syncCompactView);
   syncCompactView();

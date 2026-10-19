@@ -620,7 +620,7 @@ legend {
 @media (max-height: 600px) and (max-width: 559px) {
   .game-shell { grid-template-rows: auto auto minmax(0, 1fr) auto; }
   header { flex-wrap: nowrap; }
-  header > div, header nav, header > #theme-button { display: none; }
+  header > div, header > #theme-button { display: none; }
   header { justify-content: flex-end; position: absolute; right: 5px; top: 5px; z-index: 2; }
   #settings-tab { min-height: 28px; padding: 3px 7px; }
   .scoreboard { grid-row: 1; margin-right: 64px; min-height: 32px; padding: 2px 4px; }
