@@ -138,7 +138,7 @@ const fragmentShader = /* glsl */ `
     sparkle = smoothstep(0.97, 1.0, sparkle) * 0.08 * (1.0 - uPebbleWear);
     lit += vec3(sparkle);
 
-    gl_FragColor = vec4(lit, 0.97);
+    gl_FragColor = vec4(lit, 1.0);
   }
 `;
 
@@ -156,7 +156,7 @@ export function createIceMaterial(THREERef) {
       uTime: { value: 0.0 },
       uLightDir: { value: new THREE.Vector3(0.0, 1.0, 0.3).normalize() },
     },
-    transparent: true,
+    transparent: false,
     side: THREE.DoubleSide,
   });
 }

@@ -1,0 +1,126 @@
+/* Curling 2038: an ice arena with compact, accessible instrumentation. */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --bg:#e7eff2; --surface:#f7fbfd; --surface-2:#eaf2f5; --surface-3:#dfeaf0;
+  --text:#132d3b; --text-muted:#435e6c; --text-faint:#506977;
+  --border:#bfd1da; --border-strong:#789fab; --cyan:#006c7c;
+  --shadow-lg:0 12px 32px #183c4f18; --score-h:64px; --drawer-h:190px;
+}
+:root[data-theme="dark"] {
+  color-scheme:dark;
+  --bg:#0c1822; --surface:#132531; --surface-2:#1b3341; --surface-3:#254351;
+  --text:#edf8fc; --text-muted:#b3cbd5; --text-faint:#a5bdc7;
+  --border:#345360; --border-strong:#719aa9; --cyan:#71e0e5;
+  --shadow-lg:0 12px 32px #0003;
+}
+* { box-sizing:border-box; }
+html, body, #app { width:100%; height:100%; overflow:hidden; }
+body { background:var(--bg); font-family:'Syne',system-ui,sans-serif; }
+button, select { font:inherit; }
+button { cursor:pointer; }
+button:focus-visible, select:focus-visible, [tabindex]:focus-visible { outline:3px solid var(--cyan); outline-offset:3px; }
+button:hover:not(:disabled) { filter:brightness(1.08); }
+[hidden], .sheet-modal[hidden], .drawer-phase[hidden] { display:none !important; }
+.mobile-shell { height:100dvh; padding:var(--score-h) 0 var(--drawer-h); }
+.score-strip, .score-strip:active { background:var(--surface); box-shadow:none; }
+.score-team { color:var(--text); }
+.score-meta, .drawer-kicker, .step-label { font-family:'DM Mono',monospace; }
+.score-strip::after, .shot-drawer::after { display:none; }
+.score-values { font-family:'Syne',sans-serif; }
+.viewport-shell { min-height:0; display:flex; flex:1; flex-direction:column; padding:0 16px 12px; }
+.arena-toolbar { display:flex; justify-content:space-between; align-items:center; gap:8px; height:60px; flex-shrink:0; }
+.arena-brand { font-size:20px; font-weight:800; letter-spacing:-.04em; }
+.arena-brand span { font:10px 'DM Mono',monospace; letter-spacing:.13em; margin-left:12px; color:var(--text-muted); }
+.arena-tools { display:flex; gap:8px; }
+.arena-tools button, .orbit-controls button { min-height:40px; padding:8px 16px; border:1px solid var(--border); border-radius:8px; color:var(--text); background:var(--surface); }
+.arena-tools button[aria-pressed="true"] { border-color:var(--cyan); background:var(--surface-3); }
+.surface-stack { flex:1; min-height:0; width:100%; border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:var(--shadow-lg); }
+.surface-summary-chip, .result-chip, .tutorial-card { background:var(--surface); color:var(--text); border-color:var(--border); }
+.surface-summary-chip { font:11px 'DM Mono',monospace; letter-spacing:.03em; bottom:14px; max-width:94%; white-space:normal; text-align:center; }
+.broom-marker { color:#00495c; text-shadow:0 0 3px white; font-size:30px; filter:none; }
+.orbit-controls { position:absolute; z-index:12; top:12px; left:12px; display:flex; gap:6px; align-items:center; border-radius:10px; padding:4px 8px; background:var(--surface); font-size:12px; }
+.orbit-controls button { padding:4px; width:40px; }
+.shot-drawer { left:16px; right:16px; bottom:12px; height:calc(var(--drawer-h) - 12px); max-height:none; overflow:hidden; border:1px solid var(--border); border-radius:14px; background:var(--surface); box-shadow:none; }
+.drawer-phase { padding:12px 18px; }
+.drawer-header { margin-bottom:8px; }
+.drawer-caption { font-size:12px; }
+.drawer-steps { display:grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr) minmax(0,1fr); align-items:end; gap:16px; }
+.shot-grid { grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; }
+.step-label { font-size:10px; }
+.step-card { gap:6px; }
+.step-pill, .drawer-button, .drawer-chip-button, select { border-radius:8px; min-height:40px; padding:8px 10px; font-size:13px; }
+.drawer-setup[data-ready="true"] .step-card-ready { padding:0; border:0; background:none; }
+.step-pill[data-active="true"], .turn-button[data-active="true"], .drawer-button-primary { background:var(--cyan); color:var(--surface); box-shadow:none; animation:none; }
+.drawer-button-primary:disabled { background:var(--surface-3); color:var(--text-muted); opacity:.75; }
+.drawer-call-row { margin-top:10px; display:flex; gap:24px; }
+.call-chip { display:flex; gap:6px; border:0; background:none; padding:0; min-width:0; font-size:11px; }
+.call-chip span { color:var(--text-muted); }
+.drawer-detail:empty, #challenge-meta:empty { display:none; }
+.sheet-panel { background:var(--surface); max-height:80dvh; width:min(640px,100%); margin-inline:auto; }
+.sheet-modal { z-index:100; }
+.tutorial-card { width:min(440px,90%); padding:18px; }
+.tutorial-step strong { color:var(--text); }
+.travel-summary { color:var(--text); }
+.drawer-travel { display:flex; align-items:center; gap:24px; justify-content:center; }
+.sweep-button { width:min(300px,50%); height:64px; min-height:44px; border-radius:10px; background:var(--cyan); color:var(--surface); }
+.power-value, .power-label { color:white; }
+@media (min-width:2200px) {
+  :root, :root[data-theme] { --drawer-h:180px; }
+  .viewport-shell { padding-inline:32px; }
+  .shot-drawer { left:32px; right:32px; }
+  .drawer-steps { grid-template-columns:2fr 1fr 1fr; gap:40px; }
+}
+@media (max-width:700px) {
+  :root, :root[data-theme] { --score-h:56px; --drawer-h:224px; }
+  .score-strip { padding-inline:8px; gap:4px; }
+  .score-team { font-size:10px; padding:0; letter-spacing:.04em; }
+  .score-meta { font-size:8px; }
+  .viewport-shell { padding:0 8px 8px; }
+  .arena-toolbar { height:52px; }
+  .arena-brand { font-size:16px; }
+  .arena-brand span { display:block; font-size:8px; margin:2px 0 0; }
+  .arena-tools { gap:4px; }
+  .arena-tools button { padding:8px; font-size:11px; }
+  .shot-drawer { left:0; right:0; bottom:0; height:var(--drawer-h); border-radius:14px 14px 0 0; }
+  .drawer-phase { padding:10px 12px; }
+  .drawer-caption, .drawer-call-row { display:none; }
+  .drawer-steps { grid-template-columns:1fr 1fr; gap:10px; }
+  .step-card:first-child { grid-column:1 / -1; }
+  .shot-grid { grid-template-columns:repeat(5,minmax(0,1fr)); }
+  .step-pill { padding:8px 3px; font-size:12px; }
+  .drawer-header { margin-bottom:6px; }
+  .drawer-header .drawer-chip-button { width:auto; min-height:30px; padding:4px 12px; }
+  .surface-summary-chip { font-size:9px; padding:8px; }
+  .orbit-controls span { max-width:145px; font-size:10px; }
+  .drawer-travel { flex-direction:column; gap:8px; }
+  .sweep-call { display:none; }
+  .sweep-button { width:100%; }
+}
+@media (max-height:550px) and (min-width:600px) {
+  :root, :root[data-theme] { --score-h:44px; --drawer-h:126px; }
+  .score-strip { height:44px; }
+  .score-meta { display:none; }
+  .arena-toolbar { height:44px; }
+  .drawer-header, .drawer-call-row { display:none; }
+  .drawer-steps { grid-template-columns:2fr 1fr 1fr; }
+  .step-card:first-child { grid-column:auto; }
+  .drawer-phase { padding:10px; }
+  .shot-grid { grid-template-columns:repeat(5,minmax(0,1fr)); }
+  .tutorial-card { padding:10px; top:50%; }
+  .tutorial-step { margin-bottom:4px; font-size:11px; }
+}
+@media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+.drawer-header > .drawer-chip-button { width:auto; min-width:72px; }
+.drawer-header > div { min-width:0; }
+.drawer-caption { white-space:nowrap; }
+#challenge-detail { display:none; }
+#challenge-meta:not(:empty) { position:fixed; top:calc(var(--score-h) + 66px); left:28px; max-width:min(340px,80vw); z-index:15; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:10px; font-size:12px; }
+@media(max-width:700px) { #challenge-meta:not(:empty) { top:calc(var(--score-h) + 58px); left:16px; } }
+
+.surface-summary-chip, .result-chip { pointer-events:none; }
+@media(max-height:550px) and (min-width:600px) { .shot-drawer { height:var(--drawer-h); } .drawer-detail { display:none; } }
+#challenge-meta .drawer-meta-card { background:var(--surface); color:var(--text); border:0; padding:0; }
+#challenge-meta .tournament-card { max-height:180px; overflow:auto; }
+
+.surface-stack #challenge-meta:not(:empty) { position:absolute; top:12px; left:12px; max-width:min(340px,80%); }
+.surface-stack:has(.orbit-controls:not([hidden])) #challenge-meta { display:none; }

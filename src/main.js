@@ -1,4 +1,4 @@
-import { addMessage, createGameState, resetPlayingSurface, seedChallenge, setRenderer, startMode } from './game/state.js';
+import { addMessage, createGameState, resetPlayingSurface, seedChallenge, setCameraMode, setRenderer, startMode } from './game/state.js';
 import { applySnapshot, bindPersistence, loadSnapshot } from './game/persistence.js';
 import { createLoop } from './game/loop.js';
 import { bindInput } from './game/input.js';
@@ -14,7 +14,7 @@ function parseRuntimeOptions() {
   const params = new URLSearchParams(window.location.search);
   const renderer = params.get('renderer');
   return {
-    requestedRenderer: renderer === '3d' ? renderer : null,
+    requestedRenderer: ['2d', '3d'].includes(renderer) ? renderer : null,
     diagnostics: params.get('diagnostics') === '1',
   };
 }
@@ -84,6 +84,8 @@ function buildTextState(state) {
     gameMode: state.gameMode,
     renderer: state.renderer,
     cameraMode: state.cameraMode,
+    orbit: state.orbit ?? null,
+    sweeping: state.sweeping,
     currentTeam: state.currentTeam,
     hammerTeam: state.hammerTeam,
     end: state.end,
@@ -221,6 +223,8 @@ function mount() {
     actions,
   });
 
+  ui.elements.orbitToggle.addEventListener('click', () => setCameraMode(state, state.preferredCameraMode === 'free' ? 'delivery' : 'free'));
+
   ui.elements.overlay.addEventListener('pointerdown', () => {
     audio.ensureStarted();
   }, { once: true });
@@ -265,6 +269,7 @@ function mount() {
   loop.start();
 
   if (runtime.diagnostics) {
+    window.pauseRendering = () => loop.stop();
     window.render_game_to_text = () => buildTextState(state);
     window.advanceTime = (ms = 16) => { loop.step(ms); return buildTextState(state); };
     window.forceRenderer = (renderer) => {

@@ -41,15 +41,16 @@ export function createUI(root) {
           <div class="score-meta"><span id="score-end">END 1 / 10</span><span id="score-hammer">🔨 YELLOW</span></div>
         </div>
         <div class="score-team score-team-yel" id="team-yel"><span>YELLOW</span><span class="team-dot"></span></div>
-        ${button('⚙', 'icon-button score-settings', { id: 'settings-toggle', type: 'button', 'aria-label': 'Open settings' })}
+        ${button('☰', 'icon-button score-settings', { id: 'settings-toggle', type: 'button', 'aria-label': 'Open settings' })}
       </header>
 
       <main class="viewport-shell">
+        <div class="arena-toolbar"><div class="arena-brand">CURLING <span>2038 / ICE LAB</span></div><div class="arena-tools"><button id="orbit-toggle" type="button" aria-pressed="false">Orbit</button><button id="theme-toggle" type="button">Dark mode</button></div></div>
         <div class="surface-stack">
           <canvas id="surface-2d" class="render-surface"></canvas>
           <div id="surface-3d" class="render-surface"></div>
           <div id="input-overlay" class="input-overlay">
-            <div class="broom-marker" id="broom-marker">🧹</div>
+            <div class="broom-marker" id="broom-marker" aria-label="Aim marker">⌖</div>
             <div class="power-arc" id="power-arc" hidden>
               <div class="power-arc-ring" id="power-ring"></div>
               <div class="power-arc-content">
@@ -58,6 +59,8 @@ export function createUI(root) {
               </div>
             </div>
           </div>
+          <div id="challenge-meta"></div>
+          <div class="orbit-controls" id="orbit-controls" hidden><span>Drag to orbit · scroll to zoom</span><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button></div>
           <div class="surface-summary-chip" id="shot-summary">DRAW · IN-TURN · 45% · STONE 1/16</div>
           <div class="result-chip" id="result-chip" hidden>
             <div class="result-chip-title" id="result-title"></div>
@@ -116,7 +119,7 @@ export function createUI(root) {
           </div>
 
           <div class="drawer-detail" id="challenge-detail"></div>
-          <div id="challenge-meta"></div>
+
         </div>
 
         <div class="drawer-phase drawer-travel" id="drawer-travel" hidden>
@@ -126,7 +129,7 @@ export function createUI(root) {
         </div>
       </footer>
 
-      <div class="sheet-modal" id="history-modal" hidden>
+      <div class="sheet-modal" id="history-modal" role="dialog" aria-modal="true" aria-label="Score history" hidden>
         <div class="sheet-backdrop" data-close-modal="history"></div>
         <div class="sheet-panel">
           <div class="sheet-panel-header">
@@ -141,7 +144,7 @@ export function createUI(root) {
         </div>
       </div>
 
-      <div class="sheet-modal" id="settings-modal" hidden>
+      <div class="sheet-modal" id="settings-modal" role="dialog" aria-modal="true" aria-label="Match options" hidden>
         <div class="sheet-backdrop" data-close-modal="settings"></div>
         <div class="sheet-panel">
           <div class="sheet-panel-header">
@@ -264,11 +267,11 @@ export function createUI(root) {
             <div class="help-block">
               <div class="help-subhead">Camera Views (3D mode)</div>
               <dl class="help-dl">
-                <dt>Delivery</dt><dd>Behind the hack — the thrower's perspective.</dd>
+                <dt>Delivery</dt><dd>Elevated view of the delivery line and house.</dd>
                 <dt>Follow</dt><dd>Tracks the moving stone down the sheet.</dd>
                 <dt>House</dt><dd>Overhead view of the scoring area.</dd>
                 <dt>Broadcast</dt><dd>Classic TV camera angle from the side.</dd>
-                <dt>Free</dt><dd>Unlocked orbit camera.</dd>
+                <dt>Free</dt><dd>Drag to orbit 360°. Scroll to zoom. On touch, use the zoom buttons. Switch Orbit off to aim.</dd>
               </dl>
             </div>
           </details>
@@ -279,6 +282,8 @@ export function createUI(root) {
 
   const elements = {
     shell: root.querySelector('.mobile-shell'),
+    orbitToggle: root.querySelector('#orbit-toggle'),
+    orbitControls: root.querySelector('#orbit-controls'),
     surface2d: root.querySelector('#surface-2d'),
     surface3d: root.querySelector('#surface-3d'),
     overlay: root.querySelector('#input-overlay'),
@@ -332,6 +337,21 @@ export function createUI(root) {
     tutorialDismiss: root.querySelector('#tutorial-dismiss'),
   };
 
+  const themeButton = root.querySelector('#theme-toggle');
+  let theme = 'light';
+  try { if (localStorage.getItem('curling:theme') === 'dark') theme = 'dark'; } catch {}
+  function applyTheme() {
+    document.documentElement.dataset.theme = theme;
+    themeButton.textContent = theme === 'light' ? 'Dark mode' : 'Light mode';
+    themeButton.setAttribute('aria-pressed', String(theme === 'dark'));
+  }
+  applyTheme();
+  themeButton.addEventListener('click', () => {
+    theme = theme === 'light' ? 'dark' : 'light';
+    applyTheme();
+    try { localStorage.setItem('curling:theme', theme); } catch {}
+  });
+
   const tutorialKey = 'curling-simulator:tutorial-dismissed';
   try {
     if (localStorage.getItem(tutorialKey) !== '1') {
@@ -351,6 +371,8 @@ export function createUI(root) {
   });
 
   let lastMetaHtml = '';
+  let lastModal = null;
+  let modalReturnFocus = null;
 
   return {
     elements,
@@ -358,10 +380,13 @@ export function createUI(root) {
       const shotCall = getShotCall(state);
       const chargeReady = state.shotTypeCommitted && state.turnCommitted;
       const travelPhase = state.mode === 'travel';
-      const activeResult = state.resultChip && state.resultChip.until > performance.now();
+      const activeResult = state.resultChip && state.resultChip.until > (state.clock ?? performance.now());
       const activeDelivery = ['aim', 'charge-ready', 'power', 'travel'].includes(state.mode);
       const clutchStone = state.currentTeam === state.hammerTeam && state.shotNumber >= 15;
 
+      elements.orbitToggle.setAttribute('aria-pressed', String(state.preferredCameraMode === 'free'));
+      elements.orbitControls.hidden = state.preferredCameraMode !== 'free';
+      elements.orbitToggle.hidden = state.renderer !== '3d';
       elements.shell.dataset.phase = travelPhase ? 'travel' : 'setup';
       elements.shell.dataset.clutch = clutchStone ? 'true' : 'false';
       elements.drawerSetup.dataset.ready = String(chargeReady);
@@ -460,6 +485,8 @@ export function createUI(root) {
             <button class="drawer-chip-button drawer-chip-compact" id="challenge-try-again" type="button">Try Again</button>
           </div>
         `;
+      } else if (state.gameMode === 'challenge' && activeChallenge) {
+        metaHtml = `<div class="drawer-meta-copy">${activeChallenge.description}</div>`;
       } else if (state.gameMode === 'tournament' && state.tournament?.enabled) {
         // --- Tournament bracket display ---
         const bracket = state.tournament;
@@ -494,6 +521,15 @@ export function createUI(root) {
 
       elements.historyModal.hidden = state.modal !== 'history';
       elements.settingsModal.hidden = state.modal !== 'settings';
+      if (state.modal !== lastModal) {
+        for (const node of root.querySelectorAll('.score-strip, .viewport-shell, .shot-drawer')) node.inert = Boolean(state.modal);
+        if (state.modal) {
+          modalReturnFocus = document.activeElement;
+          const modal = state.modal === 'settings' ? elements.settingsModal : elements.historyModal;
+          modal.querySelector('button')?.focus();
+        } else modalReturnFocus?.focus();
+        lastModal = state.modal;
+      }
 
       if (activeResult) {
         elements.resultChip.hidden = false;

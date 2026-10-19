@@ -73,3 +73,17 @@ Shot Challenge includes graded drills such as Button Draw, Corner Guard, Simple 
 | Free | Unlocked orbit camera |
 
 The game defaults to the 3D arena renderer and switches to a 2D canvas fallback automatically if WebGL isn't available.
+
+
+## Curling 2038 controls
+
+The rink opens in light mode. Use **Dark mode / Light mode** in the arena toolbar
+ to switch; the choice survives reloads. **Orbit** separates camera input from
+shot input: drag in any horizontal direction to orbit, drag vertically to change
+height, scroll or use **+ / −** to zoom. Switch Orbit off to aim and deliver.
+
+Choose shot type and turn before charging. A default Draw at 45% is calibrated
+against the current engine to stop inside the house on fresh ice without sweeping.
+Sweeping carries it farther. Escape, a cancelled touch, or window focus loss
+cancels an unfinished charge without throwing. Menu shortcuts cannot steer a shot.
+Press **F** with the rink focused to enter or leave fullscreen with controls intact.

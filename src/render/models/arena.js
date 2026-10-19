@@ -20,7 +20,7 @@ function addSeatingRows(THREERef, group) {
     const row = new THREERef.Mesh(
       new THREERef.BoxGeometry(rowWidth - index * 0.8, 0.55, 1.2),
       new THREERef.MeshStandardMaterial({
-        color: index % 2 === 0 ? 0x140915 : 0x08090d,
+        color: index % 2 === 0 ? 0x355362 : 0x233b4b,
         roughness: 0.94,
         metalness: 0.02,
       }),
@@ -53,7 +53,7 @@ function addLights(THREERef, group) {
     bulb.position.set(x, y, z);
     group.add(bulb);
 
-    const light = new THREERef.PointLight(isCool ? 0x00ffff : 0xff0040, 600, 45, 2);
+    const light = new THREERef.PointLight(isCool ? 0xc9f2ff : 0xffe8cd, 280, 45, 2);
     light.position.set(x, y + 0.4, z);
     group.add(light);
   });
@@ -93,6 +93,18 @@ export function buildArena(THREERef = globalThis.THREE) {
   group.add(shell);
 
   addSeatingRows(THREE, group);
+  // Repeated light portals frame the playing surface without hiding the ice.
+  const portalMaterial = new THREE.MeshStandardMaterial({color:0x9bb9c6, metalness:0.65, roughness:0.3});
+  const lightMaterial = new THREE.MeshBasicMaterial({color:0x83e1ed});
+  for (const z of [4, 14, 24, 34]) {
+    for (const side of [-1, 1]) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.12, 3, 0.18), portalMaterial);
+      post.position.set(side*5.5, 1.5, z); group.add(post);
+      const strip = new THREE.Mesh(new THREE.BoxGeometry(0.04, 2.8, 0.2), lightMaterial);
+      strip.position.set(side*5.4, 1.5, z); group.add(strip);
+    }
+
+  }
 
   const roofBeam = makeBeam(THREE, SHEET.width + 18, 0.25, 0.45, 0x0f1016);
   roofBeam.position.set(0, 10.2, 7.5);
@@ -115,10 +127,10 @@ export function buildArena(THREERef = globalThis.THREE) {
 
   addLights(THREE, group);
 
-  const ambient = new THREE.AmbientLight(0x2b3041, 0.62);
+  const ambient = new THREE.AmbientLight(0xc9deeb, 0.85);
   group.add(ambient);
 
-  const rim = new THREE.DirectionalLight(0x00ffff, 0.95);
+  const rim = new THREE.DirectionalLight(0xd7f5ff, 0.95);
   rim.position.set(-8, 12, 10);
   group.add(rim);
 

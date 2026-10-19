@@ -1,3 +1,4 @@
+import { SHOT_PRESETS } from '../game/shotPresets.js';
 import { evaluateShot } from './evaluator.js';
 
 const SHEET_WIDTH = 4.75;
@@ -8,13 +9,9 @@ const DIFFICULTY = {
   olympic: { samples: 40, aimNoise: 0.02, velocityNoise: 0.01 },
 };
 
-const WEIGHT_OPTIONS = [
-  { preset: 'guard', velocity: 3.2 },
-  { preset: 'draw', velocity: 4.15 },
-  { preset: 'control', velocity: 5.25 },
-  { preset: 'takeout', velocity: 6.1 },
-  { preset: 'peel', velocity: 7.15 },
-];
+const WEIGHT_OPTIONS = Object.entries(SHOT_PRESETS).map(([preset, { velocity }]) => ({
+  preset, velocity: velocity * 0.9375,
+}));
 
 function cloneValue(value) {
   if (typeof structuredClone === 'function') {
@@ -81,7 +78,7 @@ export function findBestShot(stones, team, difficulty, evaluateFn = evaluateShot
   for (const baseAimX of aimPositions) {
     for (const weight of WEIGHT_OPTIONS) {
       for (const spin of spinOptions) {
-        const aimX = baseAimX + gaussian(random) * config.aimNoise;
+        const aimX = Math.max(-SHEET_WIDTH / 2 + 0.2, Math.min(SHEET_WIDTH / 2 - 0.2, baseAimX + gaussian(random) * config.aimNoise));
         const velocity = weight.velocity * (1 + gaussian(random) * config.velocityNoise);
         const result = evaluateFn(cloneValue(stones), aimX, velocity, spin, team);
         const candidate = {

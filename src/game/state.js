@@ -1,3 +1,4 @@
+import { SHOT_PRESETS } from './shotPresets.js';
 import { createStone } from '../physics/stone.js';
 import { simulateTrajectory } from '../physics/trajectory.js';
 import { calcScore } from '../physics/scoring.js';
@@ -219,14 +220,7 @@ export function createGameState() {
     movingStoneId: null,
     selectedWeight: 'draw',
     shotTypeCommitted: false,
-    weightPresets: {
-      guard: { label: 'Guard', velocity: 3.2 },
-      draw: { label: 'Draw', velocity: 4.15 },
-      freeze: { label: 'Freeze', velocity: 4.3 },
-      control: { label: 'Control', velocity: 5.25 },
-      takeout: { label: 'Takeout', velocity: 6.1 },
-      peel: { label: 'Peel', velocity: 7.15 },
-    },
+    weightPresets: structuredClone(SHOT_PRESETS),
     aimX: 0,
     aimY: SHEET.TEE_Y,
     spin: 1,
@@ -416,7 +410,7 @@ export function updateCharge(state, dt) {
   state.dirtyPreview = true;
 }
 
-export function releaseShot(state, now = performance.now()) {
+export function releaseShot(state, now = state.clock ?? performance.now()) {
   if (!state.canThrow || state.mode === 'travel') return null;
 
   state.mode = 'travel';
@@ -489,7 +483,7 @@ export function updatePreview(state) {
   return state.preview;
 }
 
-export function finalizeTravel(state, settledAt = performance.now()) {
+export function finalizeTravel(state, settledAt = state.clock ?? performance.now()) {
   const deliveredStone = state.stones.find((stone) => stone.id === state.lastReleased) ?? null;
   const scoring = calcScore(state.stones);
   const finalDistance = deliveredStone
@@ -586,8 +580,8 @@ export function scoreEnd(state) {
     score.team ? `${state.teams[score.team].name} scores ${score.points}.` : 'Blank end. Hammer stays with the current holder.',
   );
   state.resultChip = score.team
-    ? { title: `${state.teams[score.team].name.toUpperCase()} SCORES ${score.points}`, detail: `End ${state.end}`, until: performance.now() + 2200 }
-    : { title: 'BLANK END', detail: `${state.teams[state.hammerTeam].name} keeps hammer`, until: performance.now() + 2200 };
+    ? { title: `${state.teams[score.team].name.toUpperCase()} SCORES ${score.points}`, detail: `End ${state.end}`, until: (state.clock ?? performance.now()) + 2200 }
+    : { title: 'BLANK END', detail: `${state.teams[state.hammerTeam].name} keeps hammer`, until: (state.clock ?? performance.now()) + 2200 };
 }
 
 export function prepareNextEnd(state) {
@@ -607,7 +601,8 @@ export function prepareNextEnd(state) {
   }
 
   state.end += 1;
-  state.currentTeam = 'red';
+  state.shotNumber = 0;
+  state.currentTeam = state.hammerTeam === 'red' ? 'yel' : 'red';
   state.stonesRemainingByTeam = { red: 8, yel: 8 };
   state.stones = [];
   state.preview = [];
@@ -784,7 +779,7 @@ export function syncAiShot(state, shot) {
     : shot.shotType in state.weightPresets
       ? shot.shotType
       : state.selectedWeight;
-  state.powerCharge = Math.max(0.1, Math.min(1, shot.velocity / 8));
+  state.powerCharge = Math.max(0.05, Math.min(1, (shot.velocity / state.weightPresets[state.selectedWeight].velocity - 0.6) / 0.75));
   state.dirtyPreview = true;
 }
 

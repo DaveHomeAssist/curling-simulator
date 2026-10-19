@@ -1,4 +1,5 @@
 import { COLORS, SHEET } from './constants.js';
+import { SHEET as PLAYING_SHEET } from '../../physics/constants.js';
 import { createIceMaterial } from './iceShader.js';
 
 function makeLineGeometry(THREERef, length, thickness = 0.025, depth = 0.002) {
@@ -7,26 +8,24 @@ function makeLineGeometry(THREERef, length, thickness = 0.025, depth = 0.002) {
 
 function addHouseRings(THREERef, group, teeZ) {
   const ringColors = [COLORS.sheetRed, COLORS.sheetBlue, COLORS.sheetRed, 0xffffff];
-  const fillColors = [0x2255AA, 0xffffff, 0xCC2222, 0xffffff];
-  const fillOpacities = [0.3, 0.45, 0.3, 0.9];
+  const fillColors = [0xffffff, 0xc43f55, 0xf0f5f6, 0x247d99];
+  const fillOpacities = [1, 1, 1, 1];
   const ringRadii = SHEET.houseRadii;
 
   // Item 6: Filled house ring discs (from largest to smallest)
   for (let i = ringRadii.length - 1; i >= 0; i--) {
     const disc = new THREERef.Mesh(
       new THREERef.CircleGeometry(ringRadii[i], 64),
-      new THREERef.MeshStandardMaterial({
+      new THREERef.MeshBasicMaterial({
         color: fillColors[i],
-        transparent: true,
+        transparent: false,
         opacity: fillOpacities[i],
         side: THREERef.DoubleSide,
-        roughness: 0.6,
-        metalness: 0.02,
-        depthWrite: false,
+        depthWrite: true,
       }),
     );
     disc.rotation.x = -Math.PI / 2;
-    disc.position.set(0, 0.005 + i * 0.001, teeZ);
+    disc.position.set(0, 0.016 + (ringRadii.length - i) * 0.002, teeZ);
     group.add(disc);
   }
 
@@ -155,8 +154,8 @@ export function buildSheet(THREERef = globalThis.THREE) {
   farEndBoard.position.z = SHEET.length - SHEET.boardThickness / 2;
   group.add(farEndBoard);
 
-  addLine(THREE, group, SHEET.width, SHEET.hogToTee, COLORS.sheetRed);
-  addLine(THREE, group, SHEET.width, SHEET.hackToTee + SHEET.backLineFromTee, COLORS.sheetBlue);
+  addLine(THREE, group, SHEET.width, PLAYING_SHEET.HOG_LINE_Y, COLORS.sheetRed);
+  addLine(THREE, group, SHEET.width, PLAYING_SHEET.BACK_LINE_Y, COLORS.sheetBlue);
   addLine(THREE, group, SHEET.width, SHEET.length - SHEET.hogToTee, COLORS.sheetRed);
   addLine(THREE, group, SHEET.width, SHEET.length - SHEET.backLineFromTee, COLORS.sheetBlue);
   addDashedCenterLine(THREE, group, SHEET.length);

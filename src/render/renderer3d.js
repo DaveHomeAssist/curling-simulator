@@ -6,7 +6,7 @@ import { updateIceMaterial } from './models/iceShader.js';
 import { PHYSICS, SHEET } from '../physics/constants.js';
 
 const CAMERA_POSES = {
-  delivery: { position: [0, 5.6, -4.8], target: [0, 0.18, 18.5] },
+  delivery: { position: [6, 8, 9], target: [0, 0.18, 20] },
   follow: { position: [0, 4.7, -5.6], target: [0, 0.18, 14.5] },
   house: { position: [0, 10.5, 23.47], target: [0, 0, 23.47] },
   broadcast: { position: [7.8, 6.6, 20], target: [0, 0, 24] },
@@ -41,12 +41,12 @@ export function createRenderer3D(container) {
   }
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x050507);
-  scene.fog = new THREE.Fog(0x050507, 22, 88);
+  scene.background = new THREE.Color(0xc5d9df);
+  scene.fog = new THREE.Fog(0xc5d9df, 35, 100);
 
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
-  camera.position.set(0, 5.6, -4.8);
-  camera.lookAt(0, 0.18, 18.5);
+  camera.position.set(6, 8, 9);
+  camera.lookAt(0, 0.18, 20);
 
   let renderer;
   try {
@@ -86,15 +86,15 @@ export function createRenderer3D(container) {
   iceGlow.position.set(0, 0.015, SHEET.TEE_Y);
   root.add(iceGlow);
 
-  const hemi = new THREE.HemisphereLight(0xf8fdff, 0x250812, 0.82);
+  const hemi = new THREE.HemisphereLight(0xf8fdff, 0x526d78, 1.8);
   scene.add(hemi);
 
-  const keyLight = new THREE.DirectionalLight(0x00ffff, 1.5);
+  const keyLight = new THREE.DirectionalLight(0xf4fcff, 2.5);
   keyLight.position.set(0, 12, 10);
   keyLight.castShadow = true;
   scene.add(keyLight);
 
-  const fillLight = new THREE.DirectionalLight(0xff0040, 0.7);
+  const fillLight = new THREE.DirectionalLight(0xa3d9ec, 1.2);
   fillLight.position.set(-8, 8, -6);
   scene.add(fillLight);
 
@@ -213,7 +213,11 @@ export function createRenderer3D(container) {
   sbMesh.position.set(0, 8.25, 2.5);
   scene.add(sbMesh);
 
+  let scoreboardKey = '';
   function updateScoreboard(state) {
+    const key = `${state.totalScore.red}:${state.totalScore.yel}:${state.end}`;
+    if (key === scoreboardKey) return;
+    scoreboardKey = key;
     const ctx2 = sbCanvas.getContext('2d');
     ctx2.clearRect(0,0,512,256);
     ctx2.fillStyle = 'rgba(7,8,12,0.85)';
@@ -226,9 +230,9 @@ export function createRenderer3D(container) {
     ctx2.fillStyle = '#FFFFFF';
     ctx2.font = 'bold 72px system-ui';
     ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
-    ctx2.fillText(String(state.scores?.red ?? 0), 200, 90);
+    ctx2.fillText(String(state.totalScore?.red ?? 0), 200, 90);
     ctx2.fillText('·', 256, 82);
-    ctx2.fillText(String(state.scores?.yel ?? 0), 312, 90);
+    ctx2.fillText(String(state.totalScore?.yel ?? 0), 312, 90);
     // End
     ctx2.fillStyle = '#5A6080';
     ctx2.font = '32px system-ui';
@@ -268,7 +272,45 @@ export function createRenderer3D(container) {
     return mesh;
   }
 
+  const orbit = { azimuth: 0, elevation: 0.65, distance: 19 };
+  const input = container.parentElement.querySelector('#input-overlay');
+  let drag = null;
+  function orbitDown(event) {
+    if (snapshot?.preferredCameraMode !== 'free' || snapshot?.modal || event.button > 0) return;
+    drag = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    input.setPointerCapture(event.pointerId);
+  }
+  function orbitMove(event) {
+    if (!drag || drag.id !== event.pointerId) return;
+    orbit.azimuth -= (event.clientX - drag.x) * 0.009;
+    orbit.elevation = THREE.MathUtils.clamp(orbit.elevation + (event.clientY - drag.y) * 0.005, 0.2, 1.45);
+    drag.x = event.clientX;
+    drag.y = event.clientY;
+  }
+  function orbitUp() { drag = null; }
+  function zoom(delta) { orbit.distance = THREE.MathUtils.clamp(orbit.distance + delta, 5, 36); }
+  function wheel(event) {
+    if (snapshot?.preferredCameraMode !== 'free' || snapshot?.modal) return;
+    event.preventDefault();
+    zoom(event.deltaY * 0.015);
+  }
+  input.addEventListener('pointerdown', orbitDown);
+  input.addEventListener('pointermove', orbitMove);
+  input.addEventListener('pointerup', orbitUp);
+  input.addEventListener('pointercancel', orbitUp);
+  input.addEventListener('wheel', wheel, { passive: false });
+  container.parentElement.querySelector('#zoom-in').addEventListener('click', () => zoom(-2));
+  container.parentElement.querySelector('#zoom-out').addEventListener('click', () => zoom(2));
+
   function setCamera(state, movingStone) {
+    state.orbit = { ...orbit };
+    if (state.preferredCameraMode === 'free') {
+      const radius = orbit.distance * Math.cos(orbit.elevation);
+      camera.position.set(Math.sin(orbit.azimuth) * radius, Math.sin(orbit.elevation) * orbit.distance,
+        SHEET.TEE_Y - Math.cos(orbit.azimuth) * radius);
+      camera.lookAt(0, 0, SHEET.TEE_Y);
+      return;
+    }
     const pose = CAMERA_POSES[state.cameraMode] ?? CAMERA_POSES.delivery;
     const focusZ = movingStone ? movingStone.y : pose.target[2];
     const focusX = movingStone ? movingStone.x * 0.3 : pose.target[0];
@@ -283,12 +325,16 @@ export function createRenderer3D(container) {
 
   function resize(width, height) {
     renderer.setSize(width, height, false);
-    camera.aspect = width / height;
+    camera.aspect = width / Math.max(1, height);
     camera.updateProjectionMatrix();
   }
 
+  let lastPreview = null;
   function sync(state, movingStone) {
     snapshot = state;
+    const dark = document.documentElement.dataset.theme === 'dark';
+    scene.background.setHex(dark ? 0x101f2c : 0xc5d9df);
+    scene.fog.color.copy(scene.background);
     setCamera(state, movingStone);
 
     // Update ice shader with pebble wear and elapsed time
@@ -321,21 +367,30 @@ export function createRenderer3D(container) {
 
     for (const [id, mesh] of stoneMeshes.entries()) {
       if (!liveIds.has(id)) {
-        mesh.visible = false;
+        root.remove(mesh);
+        mesh.traverse(child => {
+          child.geometry?.dispose();
+          child.material?.map?.dispose();
+          child.material?.dispose();
+        });
+        stoneMeshes.delete(id);
       }
     }
 
     if (state.preview?.length > 1 && state.mode !== 'travel') {
-      const points = state.preview.map((point) => new THREE.Vector3(point.x, 0.03, point.y));
-      aimLine.geometry.dispose();
-      aimLine.geometry = new THREE.BufferGeometry().setFromPoints(points);
-      aimLine.computeLineDistances();
+      if (lastPreview !== state.preview) {
+        lastPreview = state.preview;
+        const points = state.preview.map((point) => new THREE.Vector3(point.x, 0.03, point.y));
+        aimLine.geometry.dispose();
+        aimLine.geometry = new THREE.BufferGeometry().setFromPoints(points);
+        aimLine.computeLineDistances();
+      }
       aimGroup.visible = true;
     } else {
       aimGroup.visible = false;
     }
 
-    const now = performance.now();
+    const now = state.clock ?? performance.now();
 
     // --- Sweep particles ---
     if (state.sweeping && state.mode === 'travel') {
@@ -432,6 +487,11 @@ export function createRenderer3D(container) {
       renderer.domElement.style.display = visible ? 'block' : 'none';
     },
     dispose() {
+      input.removeEventListener('pointerdown', orbitDown);
+      input.removeEventListener('pointermove', orbitMove);
+      input.removeEventListener('pointerup', orbitUp);
+      input.removeEventListener('pointercancel', orbitUp);
+      input.removeEventListener('wheel', wheel);
       renderer.dispose();
     },
   };

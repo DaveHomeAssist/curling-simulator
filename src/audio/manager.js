@@ -92,8 +92,9 @@ export function createAudioManager(state) {
         setCrowdMood(0, 'muted');
         return;
       }
-      await prime();
-      if (!audioCtx || !masterGain) return;
+      // Only the explicit gesture handler may unlock audio. Avoid queuing a
+      // suspended resume promise on every animation frame before interaction.
+      if (!initialized || audioCtx?.state !== 'running') return;
       const clutchStone = gameState.currentTeam === gameState.hammerTeam && gameState.shotNumber >= 15;
       if (gameState.mode === 'travel' && movingStone) {
         setCrowdMood(clutchStone ? 0.085 : 0.06, clutchStone ? 'clutch' : 'travel');

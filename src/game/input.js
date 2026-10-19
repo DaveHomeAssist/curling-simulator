@@ -19,17 +19,13 @@ import { CHALLENGES } from './challenges.js';
 const PRESET_KEYS = {
   Digit1: 'guard',
   Digit2: 'draw',
-  Digit3: 'control',
+  Digit3: 'freeze',
   Digit4: 'takeout',
   Digit5: 'peel',
 };
 
-function clamp(num, min, max) {
-  return Math.max(min, Math.min(max, num));
-}
-
 export function bindInput(state, elements, services) {
-  const { surface, overlay } = elements;
+  const { surface } = elements;
   const pointer = {
     active: false,
   };
@@ -54,11 +50,12 @@ export function bindInput(state, elements, services) {
   }
 
   function onPointerDown(event) {
-    if (!isHumanTurn(state)) return;
+    if (!isHumanTurn(state) || state.modal || event.button > 0 || state.preferredCameraMode === 'free') return;
     if (event.target !== surface && !surface.contains(event.target)) return;
 
     const pos = pointerPosition(event);
     pointer.active = true;
+    surface.setPointerCapture?.(event.pointerId);
 
     if (canStartCharge(pos)) {
       setChargeAnchor(state, pos.x, pos.y);
@@ -84,11 +81,26 @@ export function bindInput(state, elements, services) {
     if (!pointer.active) return;
     pointer.active = false;
     if (state.mode === 'power') {
-      releaseShot(state, performance.now());
+      releaseShot(state, state.clock ?? performance.now());
+    }
+  }
+
+  function cancelGesture() {
+    pointer.active = false;
+    state.sweeping = false;
+    if (state.mode === 'power') {
+      state.mode = 'aim';
+      state.charging = false;
+      state.powerArmed = false;
     }
   }
 
   function onKeyDown(event) {
+    if (event.code === 'Escape') { cancelGesture(); closeModal(state); return; }
+    if (state.modal || event.target?.closest?.('button, select, input, textarea, [contenteditable="true"]')) return;
+    if (event.code === 'Space' || event.code.startsWith('Arrow')) event.preventDefault();
+    if (event.repeat && event.code === 'Space') return;
+    if (!isHumanTurn(state)) return;
     if (event.code in PRESET_KEYS) {
       setWeightPreset(state, PRESET_KEYS[event.code]);
       return;
@@ -122,7 +134,7 @@ export function bindInput(state, elements, services) {
         break;
       case 'KeyF':
         if (document.fullscreenElement) document.exitFullscreen();
-        else overlay.requestFullscreen?.();
+        else document.querySelector('#app').requestFullscreen?.();
         break;
       case 'Escape':
         closeModal(state);
@@ -134,10 +146,11 @@ export function bindInput(state, elements, services) {
 
   function onKeyUp(event) {
     if (event.code === 'Space') {
+      if (state.modal) { cancelGesture(); return; }
       if (state.mode === 'travel') {
         state.sweeping = false;
       } else if (state.mode === 'power') {
-        releaseShot(state, performance.now());
+        releaseShot(state, state.clock ?? performance.now());
       }
     }
   }
@@ -147,6 +160,8 @@ export function bindInput(state, elements, services) {
   window.addEventListener('pointerup', onPointerUp);
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);
+  window.addEventListener('blur', cancelGesture);
+  surface.addEventListener('pointercancel', cancelGesture);
 
   elements.cameraSelect?.addEventListener('change', (event) => setCameraMode(state, event.target.value));
   elements.modeSelect?.addEventListener('change', (event) => startMode(state, event.target.value));
@@ -183,6 +198,7 @@ export function bindInput(state, elements, services) {
   });
   elements.scoreStrip?.addEventListener('click', () => toggleModal(state, 'history'));
   elements.scoreStrip?.addEventListener('keydown', (event) => {
+    if (event.target !== event.currentTarget) return;
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       toggleModal(state, 'history');
@@ -190,6 +206,7 @@ export function bindInput(state, elements, services) {
   });
   elements.settingsToggle?.addEventListener('click', (event) => {
     event.stopPropagation();
+    cancelGesture();
     toggleModal(state, 'settings');
   });
   elements.audioToggle?.addEventListener('click', () => toggleAudioEnabled(state));
@@ -206,6 +223,8 @@ export function bindInput(state, elements, services) {
   });
 
   return () => {
+    window.removeEventListener('blur', cancelGesture);
+    surface.removeEventListener('pointercancel', cancelGesture);
     surface.removeEventListener('pointerdown', onPointerDown);
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);

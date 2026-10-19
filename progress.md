@@ -180,3 +180,30 @@ Original prompt: complete all phases without asking again. execute all phases, c
 - Dave approved Vitest4 on October18. Updated to4.1.12; full and production npm audits now report zero findings.480 Mixmash tests pass. Complete local matches/fallback smoke passed three viewports. Phase3 test initially used its source-default /horseshoes.html against a packaged /horseshoes/ server (404); rerunning with the explicit packaged URL.
 
 - PR16 review identified focus escaping when return links reparent during resize. Capture link focus before moving the nav and restore Menu resume/settings focus appropriately; regression covers both resize directions with focused links.
+
+2026-10-18 — Curling 2038 (in progress)
+- Dave confirmed curling only; authorized repeated testing, fixes, push and deploy.
+- Added real free orbit/zoom, explicit light/dark theme and compact delivery dock.
+- Fixed modal key leakage, pointer cancellation, fullscreen target and Freeze key.
+- Stress pass: 250 extreme shots; 82 unit tests passed on Linux runner.
+- Browser review exposed obscured house colors and excessive per-frame work;
+  repairing ring layering, preview allocation, scoreboard refresh and audio unlock.
+- ECP-1.0 revision 1.0 reviewed: no equipment producer/consumer API changes.
+- Remaining gates: browser scenarios, final build, CI/deploy and physical feel.
+- Follow-up repairs: shared release presets now let default Draw stop in the house;
+  AI charge is the inverse of release speed; end numbering and hammer lead fixed.
+- Expanded matrix: all 2,200 shot/aim/spin/power/sweep combinations passed.
+  Final full unit suite: 87 tests / 19 files; production build passed.
+- Production browser controls passed: keyboard, touch taps, blur cancellation,
+  fullscreen, challenge retry, >360 degree orbit, zoom bounds and WebGL fallback.
+- Initial browser pass found the short landscape overlay hit-test/layout issues;
+  subsequent source-server reruns hit timeout/hot-reload interference. Final
+  acceptance uses a frozen production preview and bounded 60-second UI timeouts.
+- Board synchronization gap: no registered Curling project entry was found.
+  Keep this project-owned progress record authoritative until one is established.
+- Frozen production preview passed at 1440x900, 375x812, 667x375 and 2560x720:
+  six deliveries each (24 total), light/dark screenshots, cancellation, sweeping,
+  camera/zoom, saved-game reload, no page overflow and no page runtime errors.
+- Visible hog/back lines now read the same coordinates used by gameplay bounds.
+- Release gate: commit/push and GitHub Pages/live draw check next; physical
+  device feel and hardware GPU performance remain human acceptance work.

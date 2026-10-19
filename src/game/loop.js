@@ -43,8 +43,10 @@ export function createLoop(state, services) {
   let accumulator = 0;
   let lastTime = performance.now();
   let rafId = 0;
+  let simulationTime = performance.now();
 
   function fixedUpdate(dt, now) {
+    state.clock = now;
     if (state.cameraHoldUntil && now >= state.cameraHoldUntil && state.mode !== 'travel') {
       state.cameraHoldUntil = 0;
       state.cameraMode = state.preferredCameraMode;
@@ -79,13 +81,13 @@ export function createLoop(state, services) {
       if (events.length > 0) {
         services.audio?.onCollision(events);
         state.effects.impacts.push(...events.map((event) => ({ ...event, createdAt: now })));
-        state.cameraMode = 'broadcast';
+        if (state.preferredCameraMode !== 'free') state.cameraMode = 'broadcast';
         state.cameraHoldUntil = now + 900;
       }
 
       services.effects?.updateWake(state, dt, now);
 
-      if (state.renderer === '3d' && state.rendererReady && now >= state.cameraHoldUntil) {
+      if (state.preferredCameraMode !== 'free' && state.renderer === '3d' && state.rendererReady && now >= state.cameraHoldUntil) {
         if (clutchStone && movingStone && movingStone.y >= SHEET.HOG_LINE_Y + 2) {
           state.cameraMode = 'house';
         } else if (movingStone && movingStone.y >= SHEET.TEE_Y - 3.05) {
@@ -125,7 +127,8 @@ export function createLoop(state, services) {
     accumulator += delta;
 
     while (accumulator >= FIXED_DT) {
-      fixedUpdate(FIXED_DT, now);
+      simulationTime += FIXED_DT * 1000;
+      fixedUpdate(FIXED_DT, simulationTime);
       accumulator -= FIXED_DT;
     }
 
@@ -149,7 +152,8 @@ export function createLoop(state, services) {
     step(ms = 16) {
       const steps = Math.max(1, Math.round(ms / (FIXED_DT * 1000)));
       for (let index = 0; index < steps; index += 1) {
-        fixedUpdate(FIXED_DT, performance.now());
+        simulationTime += FIXED_DT * 1000;
+        fixedUpdate(FIXED_DT, simulationTime);
       }
       const movingStone = getMovingStone(state);
       services.render?.sync(state, movingStone);
