@@ -193,6 +193,26 @@ export function createHorseshoeRenderer(container) {
     '3D horseshoes practice court',
   );
   container.appendChild(renderer.domElement);
+  // WebGL context loss (tab discard, GPU reset). three.js rebuilds its GL
+  // state on restore; this keeps the court recoverable on top of that: skip
+  // drawing while lost, and on restore re-size, refresh shadows and redraw the
+  // replay-monitor feed, whose render-target contents were lost with the
+  // context and would otherwise stay black until the next replay frame.
+  let contextLost = false;
+  const CONTEXT_RESTORED = Symbol('context-restored');
+  function onContextLost(event) {
+    event.preventDefault();
+    contextLost = true;
+  }
+  function onContextRestored() {
+    contextLost = false;
+    renderer.shadowMap.needsUpdate = true;
+    feedFrame = CONTEXT_RESTORED;
+    resize();
+    renderFeed(lastFeedRequest);
+  }
+  renderer.domElement.addEventListener('webglcontextlost', onContextLost, false);
+  renderer.domElement.addEventListener('webglcontextrestored', onContextRestored, false);
 
   const orbit = new OrbitControls(camera, renderer.domElement);
   orbit.enablePan = false;
@@ -222,6 +242,7 @@ export function createHorseshoeRenderer(container) {
   let badgeActive = null;
   const feedShoes = new Map();
   let feedFrame = null;
+  let lastFeedRequest;
   const screenMaterial = new THREE.MeshBasicMaterial({ map: feed.texture, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
   function bindMonitors(venue) {
     for (const id of ['D1 lawn delay', 'D2 lawn delay', 'D3 lawn delay', 'D4 lawn delay']) {
@@ -237,7 +258,8 @@ export function createHorseshoeRenderer(container) {
     }
   }
   function renderFeed(frame) {
-    if (frame === feedFrame) return;
+    lastFeedRequest = frame;
+    if (contextLost || frame === feedFrame) return;
     feedFrame = frame;
     if (badgeActive !== Boolean(frame)) {
       badgeActive = Boolean(frame); const ctx = badge.getContext('2d');
@@ -380,6 +402,7 @@ export function createHorseshoeRenderer(container) {
   }
 
   function render(pair, alpha, state, controls, world) {
+    if (contextLost) return;
     previousPosition.set(
       pair.previous.position.x,
       pair.previous.position.y,
@@ -491,8 +514,11 @@ export function createHorseshoeRenderer(container) {
       debugLines.visible = diagnostics;
     },
     getDiagnostics: () => diagnostics,
+    isContextLost: () => contextLost,
     dispose() {
       disposed = true;
+      renderer.domElement.removeEventListener('webglcontextlost', onContextLost, false);
+      renderer.domElement.removeEventListener('webglcontextrestored', onContextRestored, false);
       feed.dispose(); screenMaterial.dispose(); badgeTexture.dispose();
       feedScene.traverse(o => { o.geometry?.dispose(); if (o.material) o.material.dispose(); });
       orbit.dispose();

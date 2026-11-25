@@ -569,7 +569,9 @@ async function boot() {
     const delta = Math.min((now - lastTime) / 1000, 0.05);
     lastTime = now;
     if (!document.hidden && !menu.open) { runner.advance(delta); scheduleAI(); }
-    if (!menu.open) render(runner.alpha);
+    // Nothing to draw for a hidden tab (or a lost GL context); the loop keeps
+    // ticking cheaply so it resumes on the next visible frame.
+    if (!menu.open && !document.hidden) render(runner.alpha);
     rafId = requestAnimationFrame(frame);
   }
   window.render_game_to_text = () =>
@@ -583,6 +585,7 @@ async function boot() {
         provisionalParameters: true,
       },
       renderer: renderer.kind,
+      contextLost: renderer.isContextLost?.() ?? false,
       menu: { open: menu.open },
       environment: renderer.getEnvironment?.() || 'fallback',
       controls: { ...controls, speedMps: strengthToSpeed(controls.strength) },
